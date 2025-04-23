@@ -9,6 +9,33 @@ class CartModel {
         }
     }
 
+    public function updateItem($id, $qty) {
+        if (isset($_SESSION['cart'][$id])) {
+            $_SESSION['cart'][$id] = $qty;
+        }
+    }
+
+    public function removeItem($id) {
+        if (isset($_SESSION['cart'][$id])) {
+            unset($_SESSION['cart'][$id]);
+        }
+    }
+
+    public function getTotal() {
+        $total = 0;
+        $items = $this->getCartItems();
+        $productModel = new ProductModel();
+        foreach ($items as $id => $qty) {
+            $product = $productModel->getProductById($id);
+            if ($product) {
+                $total += $product['price'] * $qty;
+            } else {
+                error_log("Sản phẩm với ID $id không tồn tạitại.");
+            }
+        }
+        return $total;
+    }
+
     public function getCartItems() {
         return $_SESSION['cart'] ?? [];
     }

@@ -1,5 +1,5 @@
 <?php
-require_once 'config/config.php';
+require_once 'config/Database.php';
 
 class ProductModel {
     private $conn;
@@ -7,6 +7,10 @@ class ProductModel {
     public function __construct() {
         global $conn;
         $this->conn = $conn;
+    }
+
+    public function productExists($id) {
+        return $this->getProductById($id) !== null;
     }
 
     public function getAllProducts() {
