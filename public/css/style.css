@@ -557,6 +557,152 @@ ol {
 }
 
 /*---------------------
+  BỔ SUNG - HEADER
+-----------------------*/
+.header__top__right {
+    display: -webkit-box; /* Hỗ trợ trình duyệt cũ */
+    display: -ms-flexbox; /* Hỗ trợ trình duyệt cũ */
+    display: flex;
+    -webkit-box-align: center; /* Hỗ trợ trình duyệt cũ */
+    -ms-flex-align: center; /* Hỗ trợ trình duyệt cũ */
+    align-items: center;
+    -webkit-box-pack: end; /* Hỗ trợ trình duyệt cũ */
+    -ms-flex-pack: end; /* Hỗ trợ trình duyệt cũ */
+    justify-content: flex-end;
+    gap: 20px; /* Giữ khoảng cách giữa các phần tử */
+    text-align: right;
+    padding: 10px 0 13px;
+}
+
+/* Nếu trình duyệt không hỗ trợ gap, dùng margin để thay thế */
+@supports not (gap: 20px) {
+    .header__top__right > * {
+        margin-right: 20px;
+    }
+    .header__top__right > *:last-child {
+        margin-right: 0;
+    }
+}
+
+.header__top__right__social {
+    display: -webkit-box; /* Hỗ trợ trình duyệt cũ */
+    display: -ms-flexbox; /* Hỗ trợ trình duyệt cũ */
+    display: flex;
+    -webkit-box-align: center; /* Hỗ trợ trình duyệt cũ */
+    -ms-flex-align: center; /* Hỗ trợ trình duyệt cũ */
+    align-items: center;
+    gap: 15px; /* Khoảng cách giữa các biểu tượng mạng xã hội */
+    position: relative;
+    margin-right: 35px;
+}
+
+/* Nếu trình duyệt không hỗ trợ gap, dùng margin để thay thế */
+@supports not (gap: 15px) {
+    .header__top__right__social a {
+        margin-right: 15px;
+    }
+    .header__top__right__social a:last-child {
+        margin-right: 0;
+    }
+}
+
+.header__top__right__auth {
+    display: -webkit-box; /* Hỗ trợ trình duyệt cũ */
+    display: -ms-flexbox; /* Hỗ trợ trình duyệt cũ */
+    display: flex;
+    -webkit-box-align: center; /* Hỗ trợ trình duyệt cũ */
+    -ms-flex-align: center; /* Hỗ trợ trình duyệt cũ */
+    align-items: center;
+    gap: 15px; /* Tăng khoảng cách giữa "Login" và "Sign Up" */
+}
+
+/* Nếu trình duyệt không hỗ trợ gap, dùng margin để thay thế */
+@supports not (gap: 15px) {
+    .header__top__right__auth a {
+        margin-right: 15px;
+    }
+    .header__top__right__auth a:last-child {
+        margin-right: 0;
+    }
+}
+
+.header__top__right__social a {
+    font-size: 14px;
+    color: #1c1c1c;
+    -webkit-transition: color 0.3s ease; /* Hỗ trợ trình duyệt cũ */
+    -o-transition: color 0.3s ease; /* Hỗ trợ trình duyệt cũ */
+    transition: color 0.3s ease;
+}
+
+.header__top__right__social a:hover {
+    color: #FFC125; /* Màu vàng khi hover, đồng bộ với giao diện */
+}
+
+.header__top__right__auth a {
+    font-size: 14px;
+    color: #1c1c1c;
+    text-decoration: none;
+    -webkit-transition: color 0.3s ease; /* Hỗ trợ trình duyệt cũ */
+    -o-transition: color 0.3s ease; /* Hỗ trợ trình duyệt cũ */
+    transition: color 0.3s ease;
+}
+
+.header__top__right__auth a:hover {
+    color: #FFC125; /* Màu vàng khi hover, đồng bộ với giao diện */
+}
+
+.header__top__right__auth .auth-divider {
+    margin: 0 5px;
+}
+
+/* Responsive */
+@media only screen and (max-width: 767px) {
+    .header__top__right {
+        -ms-flex-wrap: wrap; /* Hỗ trợ trình duyệt cũ */
+        flex-wrap: wrap;
+        -webkit-box-pack: center; /* Hỗ trợ trình duyệt cũ */
+        -ms-flex-pack: center; /* Hỗ trợ trình duyệt cũ */
+        justify-content: center;
+        gap: 10px; /* Giảm khoảng cách trên di động */
+    }
+
+    @supports not (gap: 10px) {
+        .header__top__right > * {
+            margin-right: 10px;
+        }
+        .header__top__right > *:last-child {
+            margin-right: 0;
+        }
+    }
+
+    .header__top__right__social {
+        gap: 10px; /* Giảm khoảng cách trên di động */
+    }
+
+    @supports not (gap: 10px) {
+        .header__top__right__social a {
+            margin-right: 10px;
+        }
+        .header__top__right__social a:last-child {
+            margin-right: 0;
+        }
+    }
+
+    .header__top__right__auth {
+        gap: 10px; /* Giảm khoảng cách trên di động */
+    }
+
+    @supports not (gap: 10px) {
+        .header__top__right__auth a {
+            margin-right: 10px;
+        }
+        .header__top__right__auth a:last-child {
+            margin-right: 0;
+        }
+    }
+}
+
+/*---------------------
   Hero
 -----------------------*/
 
@@ -3107,5 +3253,181 @@ ol {
 	}
 	.blog__details__hero__text h2 {
 		font-size: 24px;
+	}
+
+	/*---------------------
+	Account Section
+	-----------------------*/
+
+	.account__sidebar {
+		background: #FFF5E6 !important; /* Light peach background */
+		border: 1px solid #FFF5E6;
+		padding: 25px;
+	}
+
+	.account__user {
+		display: flex;
+		align-items: center;
+		margin-bottom: 25px;
+	}
+
+	.account__user .user-avatar {
+		width: 60px;
+		height: 60px;
+		border-radius: 50%;
+		margin-right: 20px;
+	}
+
+	.account__user .user-info h5 {
+		font-size: 20px; /* Increased font size */
+		color: #FFC125; /* Brown text */
+		margin-bottom: 8px;
+	}
+
+	.account__user .user-info .edit-profile {
+		font-size: 16px; /* Increased font size */
+		color: #FFC125;
+	}
+
+	.account__menu li {
+		list-style: none;
+		margin-bottom: 15px; /* Increased spacing */
+	}
+
+	.account__menu li a {
+		font-size: 18px; /* Increased font size */
+		color: #5C4033; /* Brown text */
+		display: block;
+		padding: 12px 0; /* Increased padding */
+		-webkit-transition: all, 0.3s;
+		-moz-transition: all, 0.3s;
+		-ms-transition: all, 0.3s;
+		-o-transition: all, 0.3s;
+		transition: all, 0.3s;
+	}
+
+	.account__menu li a i {
+		margin-right: 12px;
+	}
+
+	.account__menu li.active>a,
+	.account__menu li a:hover {
+		color: #FFC125;
+	}
+
+	.account__submenu {
+		padding-left: 35px;
+		margin-top: 15px; /* Increased spacing */
+	}
+
+	.account__submenu li a {
+		font-size: 16px; /* Increased font size */
+		color: #5C4033; /* Brown text */
+	}
+
+	.account__submenu li.active a {
+		color: #FFC125;
+		font-weight: 700;
+	}
+
+	.account__content {
+		background: #FFF5E6 !important; /* Light peach background */
+		border: 1px solid #FFF5E6;
+		padding: 35px; /* Increased padding */
+	}
+
+	.account__content h3 {
+		font-weight: 700;
+		margin-bottom: 15px; /* Increased spacing */
+		font-size: 32px; /* Increased font size */
+		color: #5C4033; /* Brown text */
+	}
+
+	.account__content p {
+		font-size: 18px; /* Increased font size */
+		color: #5C4033; /* Brown text */
+		line-height: 28px; /* Increased line height */
+	}
+
+	.account__profile-form .form-group {
+		margin-bottom: 25px; /* Increased spacing */
+	}
+
+	.account__profile-form .form-group label {
+		font-size: 18px; /* Increased font size */
+		color: #5C4033; /* Brown text */
+		margin-bottom: 8px;
+		display: block;
+	}
+
+	.account__profile-form .form-control {
+		height: 45px; /* Slightly larger input fields */
+		border: 1px solid #E0E0E0;
+		font-size: 16px;
+		color: #5C4033; /* Brown text */
+	}
+
+	.account__profile-form .input-group {
+		line-height: 45px; /* Match input height */
+	}
+
+	.account__profile-form .input-group span {
+		font-size: 16px;
+		color: #5C4033; /* Brown text */
+	}
+
+	.account__profile-form .input-group-append .btn-link {
+		font-size: 16px; /* Increased font size */
+		color: #FFC125;
+		padding: 0 15px;
+		line-height: 45px; /* Match input height */
+	}
+
+	.account__profile-form .gender-options label {
+		display: inline-block;
+		margin-right: 25px;
+		font-size: 18px; /* Increased font size */
+		color: #5C4033; /* Brown text */
+		line-height: 28px; /* Increased line height */
+	}
+
+	.account__profile-form .gender-options input {
+		margin-right: 8px;
+	}
+
+	.account__profile-form .btn-primary {
+		background: #FFC107 !important; /* Yellow button */
+		border: none;
+		padding: 12px 35px; /* Slightly larger button */
+		font-size: 16px; /* Increased font size */
+		color: #5C4033; /* Brown text */
+		text-transform: uppercase;
+	}
+
+	.profile-image-upload {
+		text-align: center;
+	}
+
+	.profile-image-upload .avatar {
+		width: 110px;
+		height: 110px;
+		border-radius: 50%;
+		margin-bottom: 20px; /* Increased spacing */
+	}
+
+	.profile-image-upload .btn-secondary {
+		background: #f5f5f5;
+		border: 1px solid #ebebeb;
+		color: #5C4033; /* Brown text */
+		padding: 10px 25px; /* Slightly larger button */
+		font-size: 16px; /* Increased font size */
+		margin-bottom: 15px;
+	}
+
+	.profile-image-upload p {
+		font-size: 14px; /* Slightly larger */
+		color: #5C4033; /* Brown text */
+		margin-bottom: 8px;
+		line-height: 20px; /* Increased line height */
 	}
 }

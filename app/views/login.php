@@ -1,22 +1,22 @@
 <?php
 
 // Xử lý đăng nhập
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $username = $_POST['username'];
+        $password = $_POST['password'];
 
-    // Giả lập đăng nhập (thay bằng kiểm tra database sau này)
-    if ($username === 'bee' && $password === '123456') {
-        $_SESSION['user'] = [
-            'username' => $username,
-            'email' => 'beezy@gmail.com'
-        ];
-        header("Location: index.php?page=index");
-        exit();
-    } else {
-        $error = "Invalid username or password";
+        // Giả lập đăng nhập (thay bằng kiểm tra database sau này)
+        if ($username === 'bee' && $password === '123456') {
+            $_SESSION['user'] = [
+                'username' => $username,
+                'email' => 'beezy@gmail.com'
+            ];
+            header("Location: index.php?page=index");
+            exit();
+        } else {
+            $error = "Invalid username or password";
+        }
     }
-}
 ?>
 
 <!DOCTYPE html>
@@ -226,6 +226,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     </style>
 </head>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const loginForm = document.getElementById("loginForm");
+        const errorContainer = document.getElementById("loginError");
+
+        loginForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(loginForm);
+            const response = await fetch("?controller=auth&action=login", {
+                method: "POST",
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                window.location.href = result.redirect;
+            } else {
+                errorContainer.innerText = result.message;
+            }
+        });
+    });
+</script>
 <body>
     <div class="main-content">
         <div class="container">
@@ -236,7 +260,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="right-section">
                 <h2>LOGIN</h2>
                 <?php if (isset($error)) echo "<div class='error'>$error</div>"; ?>
-                <form method="POST" action="">
+                <form id="loginForm" method="POST" action="">
                     <input type="text" name="username" placeholder="Username/ Email/ Phone number" required>
                     <input type="password" name="password" placeholder="Password" required>
                     <div class="forgot-password">
@@ -244,6 +268,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     <button type="submit">LOGIN</button>
                 </form>
+                <div id="loginError" style="color: red;"></div>
                 <div class="social-login">
                     <button><img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook">Facebook</button>
                     <button><img src="/img/gg.png" alt="Google">Google</button>
