@@ -1,26 +1,27 @@
 <?php
-require_once 'config/Database.php';
+require_once 'database/config.php';
 
 class ProductModel {
     private $conn;
 
-    public function __construct() {
-        global $conn;
+    public function __construct(mysqli $conn) {
         $this->conn = $conn;
     }
 
-    public function productExists($id) {
-        return $this->getProductById($id) !== null;
-    }
-
-    public function getAllProducts() {
-        $stmt = $this->conn->query("SELECT * FROM products");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
     public function getProductById($id) {
-        $stmt = $this->conn->prepare("SELECT * FROM products WHERE id = ?");
-        $stmt->execute([$id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $sql = "SELECT id, name, price FROM products WHERE id = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_assoc();
     }
+
+    public function getAllProducts($limit = 10, $offset = 0) {
+        $sql = "SELECT id, name, price FROM products LIMIT ? OFFSET ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("ii", $limit, $offset);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
 }

@@ -23,7 +23,7 @@ $name = "TDTU";
             <div class="col-lg-3 col-md-3">
                 <div class="account__sidebar">
                     <div class="account__user">
-                        <img src="/img/avatar.png" alt="" class="user-avatar">
+                        <img src="img/avatar.png" alt="" class="user-avatar">
                         <div class="user-info">
                             <h5><?php echo htmlspecialchars($username); ?></h5>
                             <a href="#" class="edit-profile">Edit Profile</a>
@@ -107,7 +107,7 @@ $name = "TDTU";
                         </div>
                         <div class="col-lg-4 col-md-4">
                             <div class="profile-image-upload">
-                                <img src="/img/default-avatar.jpg" alt="" class="avatar">
+                                <img src="img/default-avatar.jpg" alt="" class="avatar">
                                 <button type="button" class="btn btn-secondary">Select Image</button>
                                 <p>File size: maximum 1 MB</p>
                                 <p>File extension: JPEG, PNG</p>

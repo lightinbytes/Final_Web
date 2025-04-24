@@ -123,18 +123,19 @@ include_once __DIR__ . '/layout/header_content.php';
                 <div class="featured__controls">
                     <ul>
                         <li class="active" data-filter="*">All</li>
-                        <li data-filter=".oranges">Fashion</li>
-                        <li data-filter=".fresh-meat">Beauty & Personal Care</li>
-                        <li data-filter=".vegetables">Groceries</li>
-                        <li data-filter=".fastfood">Toys & Games</li>
+                        <li data-filter=".fashion">Fashion</li>
+                        <li data-filter=".beauty">Beauty & Personal Care</li>
+                        <li data-filter=".groceries">Groceries</li>
+                        <li data-filter=".toy">Toys & Games</li>
                     </ul>
                 </div>
             </div>
         </div>
         <div class="row featured__filter">
-            <div class="col-lg-3 col-md-4 col-sm-6 mix oranges fresh-meat">
+            <!-- Fashion -->
+            <div class="col-lg-3 col-md-4 col-sm-6 mix fashion">
                 <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/feature-1.jpg">
+                    <div class="featured__item__pic set-bg" data-setbg="img/featured/fashion-1.png">
                         <ul class="featured__item__pic__hover">
                             <li><a href="#"><i class="fa fa-heart"></i></a></li>
                             <li><a href="#"><i class="fa fa-retweet"></i></a></li>
@@ -142,14 +143,15 @@ include_once __DIR__ . '/layout/header_content.php';
                         </ul>
                     </div>
                     <div class="featured__item__text">
-                        <h6><a href="#">Water Bottle</a></h6>
-                        <h5>$30.00</h5>
+                        <h6><a href="#">T-shirt</a></h6>
+                        <h5>$15.00</h5>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-4 col-sm-6 mix vegetables fastfood">
+            <!-- Beauty & Personal Care -->
+            <div class="col-lg-3 col-md-4 col-sm-6 mix beauty">
                 <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/feature-2.jpg">
+                    <div class="featured__item__pic set-bg" data-setbg="img/featured/beauty-1.png">
                         <ul class="featured__item__pic__hover">
                             <li><a href="#"><i class="fa fa-heart"></i></a></li>
                             <li><a href="#"><i class="fa fa-retweet"></i></a></li>
@@ -157,14 +159,15 @@ include_once __DIR__ . '/layout/header_content.php';
                         </ul>
                     </div>
                     <div class="featured__item__text">
-                        <h6><a href="#">Crab Pool Security</a></h6>
-                        <h5>$30.00</h5>
+                        <h6><a href="#">Eyeshadow Palette</a></h6>
+                        <h5>$25.00</h5>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-4 col-sm-6 mix vegetables fresh-meat">
+            <!-- Groceries -->
+            <div class="col-lg-3 col-md-4 col-sm-6 mix groceries">
                 <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/feature-3.jpg">
+                    <div class="featured__item__pic set-bg" data-setbg="img/featured/groceries-1.png">
                         <ul class="featured__item__pic__hover">
                             <li><a href="#"><i class="fa fa-heart"></i></a></li>
                             <li><a href="#"><i class="fa fa-retweet"></i></a></li>
@@ -172,14 +175,15 @@ include_once __DIR__ . '/layout/header_content.php';
                         </ul>
                     </div>
                     <div class="featured__item__text">
-                        <h6><a href="#">Crab Pool Security</a></h6>
-                        <h5>$30.00</h5>
+                        <h6><a href="#">Organic Rice</a></h6>
+                        <h5>$9.00</h5>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-4 col-sm-6 mix fastfood oranges">
+            <!-- Toys & Games -->
+            <div class="col-lg-3 col-md-4 col-sm-6 mix toy">
                 <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/feature-4.jpg">
+                    <div class="featured__item__pic set-bg" data-setbg="img/featured/toy-1.png">
                         <ul class="featured__item__pic__hover">
                             <li><a href="#"><i class="fa fa-heart"></i></a></li>
                             <li><a href="#"><i class="fa fa-retweet"></i></a></li>
@@ -187,14 +191,15 @@ include_once __DIR__ . '/layout/header_content.php';
                         </ul>
                     </div>
                     <div class="featured__item__text">
-                        <h6><a href="#">Crab Pool Security</a></h6>
-                        <h5>$30.00</h5>
+                        <h6><a href="#">Lego Set</a></h6>
+                        <h5>$17.00</h5>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-4 col-sm-6 mix fresh-meat vegetables">
+            <!-- Fashion -->
+            <div class="col-lg-3 col-md-4 col-sm-6 mix fashion">
                 <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/feature-5.jpg">
+                    <div class="featured__item__pic set-bg" data-setbg="img/featured/fashion-2.png">
                         <ul class="featured__item__pic__hover">
                             <li><a href="#"><i class="fa fa-heart"></i></a></li>
                             <li><a href="#"><i class="fa fa-retweet"></i></a></li>
@@ -202,14 +207,15 @@ include_once __DIR__ . '/layout/header_content.php';
                         </ul>
                     </div>
                     <div class="featured__item__text">
-                        <h6><a href="#">Crab Pool Security</a></h6>
-                        <h5>$30.00</h5>
+                        <h6><a href="#">Jeans</a></h6>
+                        <h5>$19.00</h5>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-4 col-sm-6 mix oranges fastfood">
+            <!-- Beauty & Personal Care -->
+            <div class="col-lg-3 col-md-4 col-sm-6 mix beauty">
                 <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/feature-6.jpg">
+                    <div class="featured__item__pic set-bg" data-setbg="img/featured/beauty-2.png">
                         <ul class="featured__item__pic__hover">
                             <li><a href="#"><i class="fa fa-heart"></i></a></li>
                             <li><a href="#"><i class="fa fa-retweet"></i></a></li>
@@ -217,14 +223,15 @@ include_once __DIR__ . '/layout/header_content.php';
                         </ul>
                     </div>
                     <div class="featured__item__text">
-                        <h6><a href="#">Crab Pool Security</a></h6>
-                        <h5>$30.00</h5>
+                        <h6><a href="#">Lipstick</a></h6>
+                        <h5>$20.00</h5>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-4 col-sm-6 mix fresh-meat vegetables">
+            <!-- Groceries -->
+            <div class="col-lg-3 col-md-4 col-sm-6 mix groceries">
                 <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/feature-7.jpg">
+                    <div class="featured__item__pic set-bg" data-setbg="img/featured/groceries-2.png">
                         <ul class="featured__item__pic__hover">
                             <li><a href="#"><i class="fa fa-heart"></i></a></li>
                             <li><a href="#"><i class="fa fa-retweet"></i></a></li>
@@ -232,14 +239,15 @@ include_once __DIR__ . '/layout/header_content.php';
                         </ul>
                     </div>
                     <div class="featured__item__text">
-                        <h6><a href="#">Crab Pool Security</a></h6>
-                        <h5>$30.00</h5>
+                        <h6><a href="#">Olive Oil</a></h6>
+                        <h5>$10.00</h5>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-4 col-sm-6 mix fastfood vegetables">
+            <!-- Toys & Games -->
+            <div class="col-lg-3 col-md-4 col-sm-6 mix toy">
                 <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/feature-8.jpg">
+                    <div class="featured__item__pic set-bg" data-setbg="img/featured/toy-2.png">
                         <ul class="featured__item__pic__hover">
                             <li><a href="#"><i class="fa fa-heart"></i></a></li>
                             <li><a href="#"><i class="fa fa-retweet"></i></a></li>
@@ -247,8 +255,8 @@ include_once __DIR__ . '/layout/header_content.php';
                         </ul>
                     </div>
                     <div class="featured__item__text">
-                        <h6><a href="#">Crab Pool Security</a></h6>
-                        <h5>$30.00</h5>
+                        <h6><a href="#">Board Game</a></h6>
+                        <h5>$11.00</h5>
                     </div>
                 </div>
             </div>
@@ -287,11 +295,11 @@ include_once __DIR__ . '/layout/header_content.php';
                         <div class="latest-prdouct__slider__item">
                             <a href="#" class="latest-product__item">
                                 <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/lp-1.jpg" alt="">
+                                    <img src="img/latest-product/last-1.png" alt="">
                                 </div>
                                 <div class="latest-product__item__text">
-                                    <h6>Crab Pool Security</h6>
-                                    <span>$30.00</span>
+                                    <h6>Noodles</h6>
+                                    <span>$3.00</span>
                                 </div>
                             </a>
                             <a href="#" class="latest-product__item">
@@ -299,46 +307,46 @@ include_once __DIR__ . '/layout/header_content.php';
                                     <img src="img/latest-product/lp-2.jpg" alt="">
                                 </div>
                                 <div class="latest-product__item__text">
-                                    <h6>Crab Pool Security</h6>
-                                    <span>$30.00</span>
+                                    <h6>Bell pepper</h6>
+                                    <span>$5.00</span>
                                 </div>
                             </a>
                             <a href="#" class="latest-product__item">
                                 <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/lp-3.jpg" alt="">
+                                    <img src="img/latest-product/last-2.png" alt="">
                                 </div>
                                 <div class="latest-product__item__text">
-                                    <h6>Crab Pool Security</h6>
-                                    <span>$30.00</span>
+                                    <h6>Rice Organic</h6>
+                                    <span>$9.00</span>
                                 </div>
                             </a>
                         </div>
                         <div class="latest-prdouct__slider__item">
                             <a href="#" class="latest-product__item">
                                 <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/lp-1.jpg" alt="">
+                                    <img src="img/latest-product/last-3.png" alt="">
                                 </div>
                                 <div class="latest-product__item__text">
-                                    <h6>Crab Pool Security</h6>
-                                    <span>$30.00</span>
+                                    <h6>Notebook</h6>
+                                    <span>$3.00</span>
                                 </div>
                             </a>
                             <a href="#" class="latest-product__item">
                                 <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/lp-2.jpg" alt="">
+                                    <img src="img/latest-product/milk.png" alt="">
                                 </div>
                                 <div class="latest-product__item__text">
-                                    <h6>Crab Pool Security</h6>
-                                    <span>$30.00</span>
+                                    <h6>Milk</h6>
+                                    <span>$4.00</span>
                                 </div>
                             </a>
                             <a href="#" class="latest-product__item">
                                 <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/lp-3.jpg" alt="">
+                                    <img src="img/latest-product/cest.png" alt="">
                                 </div>
                                 <div class="latest-product__item__text">
-                                    <h6>Crab Pool Security</h6>
-                                    <span>$30.00</span>
+                                    <h6>Sponge cakey</h6>
+                                    <span>$2.50</span>
                                 </div>
                             </a>
                         </div>
@@ -352,58 +360,58 @@ include_once __DIR__ . '/layout/header_content.php';
                         <div class="latest-prdouct__slider__item">
                             <a href="#" class="latest-product__item">
                                 <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/lp-1.jpg" alt="">
+                                    <img src="img/latest-product/beauty-1.png" alt="">
                                 </div>
                                 <div class="latest-product__item__text">
-                                    <h6>Crab Pool Security</h6>
-                                    <span>$30.00</span>
+                                    <h6>Eyeshadow Palette</h6>
+                                    <span>$25.00</span>
                                 </div>
                             </a>
                             <a href="#" class="latest-product__item">
                                 <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/lp-2.jpg" alt="">
+                                    <img src="img/latest-product/beauty-2.png" alt="">
                                 </div>
                                 <div class="latest-product__item__text">
-                                    <h6>Crab Pool Security</h6>
-                                    <span>$30.00</span>
+                                    <h6>Lipstick</h6>
+                                    <span>$20.00</span>
                                 </div>
                             </a>
                             <a href="#" class="latest-product__item">
                                 <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/lp-3.jpg" alt="">
+                                    <img src="img/latest-product/makeup remover.png" alt="">
                                 </div>
                                 <div class="latest-product__item__text">
-                                    <h6>Crab Pool Security</h6>
-                                    <span>$30.00</span>
+                                    <h6>Makeup remover</h6>
+                                    <span>$15.00</span>
                                 </div>
                             </a>
                         </div>
                         <div class="latest-prdouct__slider__item">
                             <a href="#" class="latest-product__item">
                                 <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/lp-1.jpg" alt="">
+                                    <img src="img/latest-product/mask.png" alt="">
                                 </div>
                                 <div class="latest-product__item__text">
-                                    <h6>Crab Pool Security</h6>
-                                    <span>$30.00</span>
+                                    <h6>Skin care face mask</h6>
+                                    <span>$7.00</span>
                                 </div>
                             </a>
                             <a href="#" class="latest-product__item">
                                 <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/lp-2.jpg" alt="">
+                                    <img src="img/latest-product/watch.png" alt="">
                                 </div>
                                 <div class="latest-product__item__text">
-                                    <h6>Crab Pool Security</h6>
-                                    <span>$30.00</span>
+                                    <h6>Watch</h6>
+                                    <span>$100.00</span>
                                 </div>
                             </a>
                             <a href="#" class="latest-product__item">
                                 <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/lp-3.jpg" alt="">
+                                    <img src="img/latest-product/calcula.png" alt="">
                                 </div>
                                 <div class="latest-product__item__text">
-                                    <h6>Crab Pool Security</h6>
-                                    <span>$30.00</span>
+                                    <h6>Calculator</h6>
+                                    <span>$27.00</span>
                                 </div>
                             </a>
                         </div>
@@ -417,58 +425,58 @@ include_once __DIR__ . '/layout/header_content.php';
                         <div class="latest-prdouct__slider__item">
                             <a href="#" class="latest-product__item">
                                 <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/lp-1.jpg" alt="">
+                                    <img src="img/latest-product/flip.png" alt="">
                                 </div>
                                 <div class="latest-product__item__text">
-                                    <h6>Crab Pool Security</h6>
-                                    <span>$30.00</span>
+                                    <h6>Flip-flops</h6>
+                                    <span>$5.00</span>
                                 </div>
                             </a>
                             <a href="#" class="latest-product__item">
                                 <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/lp-2.jpg" alt="">
+                                    <img src="img/latest-product/pen.png" alt="">
                                 </div>
                                 <div class="latest-product__item__text">
-                                    <h6>Crab Pool Security</h6>
-                                    <span>$30.00</span>
+                                    <h6>Peny</h6>
+                                    <span>$1.50</span>
                                 </div>
                             </a>
                             <a href="#" class="latest-product__item">
                                 <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/lp-3.jpg" alt="">
+                                    <img src="img/latest-product/clock.png" alt="">
                                 </div>
                                 <div class="latest-product__item__text">
-                                    <h6>Crab Pool Security</h6>
-                                    <span>$30.00</span>
+                                    <h6>Clock</h6>
+                                    <span>$11.00</span>
                                 </div>
                             </a>
                         </div>
                         <div class="latest-prdouct__slider__item">
                             <a href="#" class="latest-product__item">
                                 <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/lp-1.jpg" alt="">
+                                    <img src="img/latest-product/lamp.png" alt="">
                                 </div>
                                 <div class="latest-product__item__text">
-                                    <h6>Crab Pool Security</h6>
-                                    <span>$30.00</span>
+                                    <h6>Lamp</h6>
+                                    <span>$14.00</span>
                                 </div>
                             </a>
                             <a href="#" class="latest-product__item">
                                 <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/lp-2.jpg" alt="">
+                                    <img src="img/latest-product/fan.png" alt="">
                                 </div>
                                 <div class="latest-product__item__text">
-                                    <h6>Crab Pool Security</h6>
-                                    <span>$30.00</span>
+                                    <h6>Handheld fan</h6>
+                                    <span>$18.00</span>
                                 </div>
                             </a>
                             <a href="#" class="latest-product__item">
                                 <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/lp-3.jpg" alt="">
+                                    <img src="img/latest-product/wallet.png" alt="">
                                 </div>
                                 <div class="latest-product__item__text">
-                                    <h6>Crab Pool Security</h6>
-                                    <span>$30.00</span>
+                                    <h6>Wallet</h6>
+                                    <span>$22.00</span>
                                 </div>
                             </a>
                         </div>
