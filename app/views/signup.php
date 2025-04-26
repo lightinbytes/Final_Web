@@ -51,7 +51,7 @@
             padding: 40px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            width: 450px; /* Tăng chiều rộng để chứa thêm trường */
+            width: 450px;
         }
         .right-section h2 {
             font-size: 24px;
@@ -60,6 +60,12 @@
         }
         .right-section .error {
             color: red;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        .right-section .success {
+            color: green;
             text-align: center;
             margin-bottom: 15px;
             font-size: 14px;
@@ -117,8 +123,6 @@
             color: #FFC125;
             text-decoration: none;
         }
-
-        /* Media Query cho tablet (dưới 768px) */
         @media (max-width: 768px) {
             .container {
                 flex-direction: column;
@@ -144,8 +148,6 @@
                 padding: 20px;
             }
         }
-
-        /* Media Query cho mobile (dưới 480px) */
         @media (max-width: 480px) {
             .main-content {
                 padding: 20px 10px;
@@ -207,12 +209,16 @@
             </div>
             <div class="right-section">
                 <h2>SIGN UP</h2>
-                <form action="signup_process.php" method="POST">
-                    <input type="text" name="fullname" placeholder="Your name" required>
-                    <input type="text" name="email" placeholder="Email" required>
-                    <input type="text" name="phone" placeholder="Phone number" required>
-
-                    </select>
+                <?php if (isset($error) && $error): ?>
+                    <div class="error"><?php echo htmlspecialchars($error); ?></div>
+                <?php endif; ?>
+                <?php if (isset($success) && $success): ?>
+                    <div class="success"><?php echo htmlspecialchars($success); ?></div>
+                <?php endif; ?>
+                <form action="?page=signup" method="POST">
+                    <input type="text" name="fullname" placeholder="Your name" value="<?php echo isset($_POST['fullname']) ? htmlspecialchars($_POST['fullname']) : ''; ?>" required>
+                    <input type="text" name="email" placeholder="Email" value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>" required>
+                    <input type="text" name="phone" placeholder="Phone number" value="<?php echo isset($_POST['phone']) ? htmlspecialchars($_POST['phone']) : ''; ?>" required>
                     <input type="password" name="password" placeholder="Password" required>
                     <input type="password" name="repeat_password" placeholder="Confirm Password" required>
                     <button type="submit">SIGN UP</button>

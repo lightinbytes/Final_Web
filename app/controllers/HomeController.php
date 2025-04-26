@@ -20,6 +20,28 @@ class HomeController {
     }
 
     public function signup() {
+        $error = '';
+        $success = '';
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $fullname = trim($_POST['fullname']);
+            $email = trim($_POST['email']);
+            $phone = trim($_POST['phone']);
+            $password = trim($_POST['password']);
+            $repeat_password = trim($_POST['repeat_password']);
+
+            require_once BASE_PATH . 'app/models/UserModel.php';
+            $userModel = new UserModel($this->conn);
+            $result = $userModel->signup($fullname, $email, $phone, $password, $repeat_password);
+
+            if ($result['success']) {
+                $success = $result['message'];
+                header('Refresh: 2; URL=index.php?page=login');
+            } else {
+                $error = $result['error'];
+            }
+        }
+
         require_once BASE_PATH . 'app/views/signup.php';
     }
 
@@ -47,3 +69,4 @@ class HomeController {
         require_once BASE_PATH . 'app/views/account.php';
     }
 }
+?>

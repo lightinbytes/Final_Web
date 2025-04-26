@@ -1,6 +1,6 @@
 <?php
 // Sửa đường dẫn gọi đến file config.php
-require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../../database/config.php';
 
 class ProductModel {
     private $conn;

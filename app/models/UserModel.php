@@ -36,6 +36,33 @@ class UserModel {
         return false;
     }
 
+    public function signup($fullname, $email, $phone, $password, $repeat_password) {
+        if ($password !== $repeat_password) {
+            return ['success' => false, 'error' => 'Mật khẩu và xác nhận mật khẩu không khớp!'];
+        }
+
+        $username = strtolower(str_replace(' ', '_', trim($fullname)));
+
+        $sql = "SELECT id FROM users WHERE email = ? OR username = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("ss", $email, $username);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            return ['success' => false, 'error' => 'Email hoặc username đã được sử dụng!'];
+        }
+
+        $sql = "INSERT INTO users (username, email, phone, password, name) VALUES (?, ?, ?, ?, ?)";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("sssss", $username, $email, $phone, $password, $fullname);
+        if ($stmt->execute()) {
+            return ['success' => true, 'message' => 'Đăng ký thành công!'];
+        } else {
+            return ['success' => false, 'error' => 'Lỗi khi đăng ký. Vui lòng thử lại!'];
+        }
+    }
+
     public function getUserByIdentifier($identifier) {
         $sql = "SELECT * FROM users WHERE username = ? OR email = ? OR phone = ?";
         $stmt = $this->conn->prepare($sql);
