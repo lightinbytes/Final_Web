@@ -1,40 +1,49 @@
 <?php
+if (!defined('BASEPATH')) {
+    exit('No direct script access allowed');
+}
+
 class HomeController {
+    private $conn;
+
+    public function __construct($conn) {
+        $this->conn = $conn;
+    }
+
     public function index() {
-        require_once __DIR__ . '/../views/home.php';
-    }
-
-    public function contact() {
-        require_once __DIR__ . '/../views/contact.php';
-    }
-
-    public function cart() {
-        require_once __DIR__ . '/../views/cart.php';
-    }
-    
-    public function checkout() {
-        require_once __DIR__ . '/../views/checkout.php';
-    }
-
-    public function shop_grid() {
-        require_once __DIR__ . '/../views/shop_grid.php';
-    }  
-    
-    public function shop_detail() {
-        require_once __DIR__ . '/../views/shop_detail.php';
-    } 
-
-    public function signup() {
-        require_once __DIR__ . '/../views/signup.php';
+        require_once BASE_PATH . 'app/views/home.php';
     }
 
     public function login() {
-        require_once __DIR__ . '/../views/login.php';
+        $conn = $this->conn; // Truyền $conn vào login.php
+        require_once BASE_PATH . 'app/views/login.php';
     }
 
-    public function account() { 
-        require_once __DIR__ . '/../views/account.php';
+    public function signup() {
+        require_once BASE_PATH . 'app/views/signup.php';
     }
-    
+
+    public function contact() {
+        require_once BASE_PATH . 'app/views/contact.php';
+    }
+
+    public function cart() {
+        require_once BASE_PATH . 'app/views/cart.php';
+    }
+
+    public function checkout() {
+        require_once BASE_PATH . 'app/views/checkout.php';
+    }
+
+    public function shop_grid() {
+        require_once BASE_PATH . 'app/views/shop_grid.php';
+    }
+
+    public function shop_detail() {
+        require_once BASE_PATH . 'app/views/shop_detail.php';
+    }
+
+    public function account() {
+        require_once BASE_PATH . 'app/views/account.php';
+    }
 }
-?>

@@ -1,20 +1,33 @@
 <?php
+if (!defined('BASEPATH')) {
+    exit('No direct script access allowed');
+}
 
-// Xử lý đăng nhập
+require_once BASE_PATH . 'app/models/UserModel.php';
+
+$userModel = new UserModel($conn);
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+    // echo "Identifier: " . htmlspecialchars($_POST['identifier']) . "<br>";
+    // echo "Password: " . htmlspecialchars($_POST['password']) . "<br>";
+    // exit();
+    $identifier = $_POST['identifier'] ?? '';
+    $password = $_POST['password'] ?? '';
 
-    // Giả lập đăng nhập (thay bằng kiểm tra database sau này)
-    if ($username === 'bee' && $password === '123456') {
-        $_SESSION['user'] = [
-            'username' => $username,
-            'email' => 'beezy@gmail.com'
-        ];
-        header("Location: index.php?page=index");
-        exit();
+    if (empty($identifier) || empty($password)) {
+        $error = "Vui lòng nhập đầy đủ thông tin.";
     } else {
-        $error = "Invalid username or password";
+        $user = $userModel->login($identifier, $password);
+        if ($user) {
+            $_SESSION['user'] = [
+                'username' => $user['username'],
+                'email' => $user['email']
+            ];
+            header("Location: index.php?page=index");
+            exit();
+        } else {
+            $error = "Tên đăng nhập hoặc mật khẩu không đúng.";
+        }
     }
 }
 ?>
@@ -237,7 +250,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <h2>LOGIN</h2>
                 <?php if (isset($error)) echo "<div class='error'>$error</div>"; ?>
                 <form method="POST" action="">
-                    <input type="text" name="username" placeholder="Username/ Email/ Phone number" required>
+                    <input type="text" name="identifier" placeholder="Username/ Email/ Phone number" required>
                     <input type="password" name="password" placeholder="Password" required>
                     <div class="forgot-password">
                         <a href="#">Forgot Password</a>

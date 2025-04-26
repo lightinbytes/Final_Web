@@ -1,6 +1,6 @@
 <?php
 require_once 'app/models/UserModel.php';
-require_once 'helpers/auth_helper.php';
+require_once 'helper/auth_helper.php';
 
 class AuthController {
     private $userModel;

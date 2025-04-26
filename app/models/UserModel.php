@@ -1,5 +1,9 @@
 <?php
-require_once 'database/config.php';
+if (!defined('BASEPATH')) {
+    exit('No direct script access allowed');
+}
+
+require_once BASE_PATH . 'database/config.php';
 
 class UserModel {
     private $conn;
@@ -20,8 +24,13 @@ class UserModel {
     }
 
     public function login($identifier, $password) {
-        $user = $this->getUserByIdentifier($identifier);
-        if ($user && password_verify($password, $user['password'])) {
+        $sql = "SELECT * FROM users WHERE username = ? OR email = ? OR phone = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("sss", $identifier, $identifier, $identifier);
+        $stmt->execute();
+        $user = $stmt->get_result()->fetch_assoc();
+
+        if ($user && $user['password'] === $password) {
             return $user;
         }
         return false;

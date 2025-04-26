@@ -1,24 +1,41 @@
 <?php
+// Bật hiển thị lỗi để debug dễ dàng
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+// Định nghĩa BASEPATH để vượt qua kiểm tra bảo mật
+define('BASEPATH', true);
+
+// Định nghĩa đường dẫn gốc của dự án
+if (!defined('BASE_PATH')) {
+    define('BASE_PATH', dirname(__DIR__) . '/');
+}
+
 // Khởi động session
 session_start();
 
-// Định nghĩa hằng số cho đường dẫn
-define('BASE_PATH', dirname(__DIR__));
+// Load file cấu hình database
+if (file_exists(BASE_PATH . 'database/config.php')) {
+    require_once BASE_PATH . 'database/config.php';
+} else {
+    die('Lỗi: Không tìm thấy file database/config.php');
+}
 
-// Include file khởi tạo ứng dụng
-require_once BASE_PATH . '/app/controllers/HomeController.php';
+// Load HomeController
+if (file_exists(BASE_PATH . 'app/controllers/HomeController.php')) {
+    require_once BASE_PATH . 'app/controllers/HomeController.php';
+} else {
+    die('Lỗi: Không tìm thấy file app/controllers/HomeController.php');
+}
 
-// Lấy tham số từ URL
+// Lấy tham số page từ URL
 $page = isset($_GET['page']) ? $_GET['page'] : 'index';
 
-// Khởi tạo controller
-$controller = new HomeController();
+// Khởi tạo controller với $conn
+$controller = new HomeController($conn);
 
-// Gọi phương thức tương ứng
+// Điều hướng đến phương thức tương ứng
 switch ($page) {
     case 'contact':
         $controller->contact();
@@ -26,7 +43,7 @@ switch ($page) {
     case 'cart':
         $controller->cart();
         break;
-    case 'checkout': 
+    case 'checkout':
         $controller->checkout();
         break;
     case 'shop_grid':
@@ -41,10 +58,10 @@ switch ($page) {
     case 'signup':
         $controller->signup();
         break;
-    case 'account': 
+    case 'account':
         $controller->account();
         break;
-    case 'logout': 
+    case 'logout':
         session_destroy();
         header("Location: index.php?page=index");
         exit();
