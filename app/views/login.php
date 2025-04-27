@@ -1,18 +1,18 @@
 <?php
-if (!defined('BASEPATH')) {
-    exit('No direct script access allowed');
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
 }
 
-require_once BASE_PATH . 'app/models/UserModel.php';
+require_once __DIR__ . '/../../database/config.php';
+require_once __DIR__ . '/../models/UserModel.php';
 
 $userModel = new UserModel($conn);
 
+$error = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // echo "Identifier: " . htmlspecialchars($_POST['identifier']) . "<br>";
-    // echo "Password: " . htmlspecialchars($_POST['password']) . "<br>";
-    // exit();
-    $identifier = $_POST['identifier'] ?? '';
-    $password = $_POST['password'] ?? '';
+    $identifier = trim($_POST['identifier'] ?? '');
+    $password = trim($_POST['password'] ?? '');
 
     if (empty($identifier) || empty($password)) {
         $error = "Vui lòng nhập đầy đủ thông tin.";
@@ -20,8 +20,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $userModel->login($identifier, $password);
         if ($user) {
             $_SESSION['user'] = [
+                'user_id' => $user['id'],
                 'username' => $user['username'],
-                'email' => $user['email']
+                'email' => $user['email'],
+                'role' => $user['role'] ?? 'user'
             ];
             header("Location: index.php?page=index");
             exit();
@@ -38,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Beezy</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         body {
             margin: 0;
@@ -52,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 40px 0; 
+            padding: 40px 0;
         }
         .container {
             display: flex;
@@ -70,14 +73,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             width: 140px;
             margin-bottom: 20px;
         }
-        .left-section h1 {
+        .left-section h2 {
             font-size: 48px;
             margin: 0;
-            color: #333;
-        }
-        .left-section p {
-            font-size: 18px;
-            margin-top: 10px;
             color: #333;
         }
         .right-section {
@@ -110,12 +108,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         .right-section button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             background-color: #FFC125;
             color: white;
             border: none;
             border-radius: 4px;
-            font-size: 15px;
+            font-size: 16px;
             cursor: pointer;
         }
         .right-section button:hover {
@@ -123,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         .right-section .forgot-password {
             text-align: right;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .right-section .forgot-password a {
             color: #FFC125;
@@ -158,8 +156,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #FFC125;
             text-decoration: none;
         }
-
-        /* Media Query cho tablet (dưới 768px) */
         @media (max-width: 768px) {
             .container {
                 flex-direction: column;
@@ -173,11 +169,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             .left-section img {
                 width: 100px;
             }
-            .left-section h1 {
+            .left-section h2 {
                 font-size: 36px;
-            }
-            .left-section p {
-                font-size: 16px;
             }
             .right-section {
                 width: 100%;
@@ -185,8 +178,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 padding: 20px;
             }
         }
-
-        /* Media Query cho mobile (dưới 480px) */
         @media (max-width: 480px) {
             .main-content {
                 padding: 20px 10px;
@@ -197,11 +188,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             .left-section img {
                 width: 80px;
             }
-            .left-section h1 {
+            .left-section h2 {
                 font-size: 28px;
-            }
-            .left-section p {
-                font-size: 14px;
             }
             .right-section {
                 padding: 15px;
@@ -244,16 +232,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="container">
             <div class="left-section">
                 <a href="/"><img src="img/logo.png" alt="Beezy Logo"></a>
-                <h2 style="color: #363636;">Be smart. Be fast. Be Beezy!</h2>
+                <h2>Be smart. Be fast. Be Beezy!</h2>
             </div>
             <div class="right-section">
                 <h2>LOGIN</h2>
-                <?php if (isset($error)) echo "<div class='error'>$error</div>"; ?>
+                <?php if ($error): ?>
+                    <div class="error"><?php echo htmlspecialchars($error); ?></div>
+                <?php endif; ?>
                 <form method="POST" action="">
                     <input type="text" name="identifier" placeholder="Username/ Email/ Phone number" required>
                     <input type="password" name="password" placeholder="Password" required>
                     <div class="forgot-password">
-                        <a href="#">Forgot Password</a>
+                        <a href="#">Forgot Password?</a>
                     </div>
                     <button type="submit">LOGIN</button>
                 </form>
@@ -262,7 +252,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <button><img src="img/gg.png" alt="Google">Google</button>
                 </div>
                 <div class="signup-link">
-                    Don't have an account? <a href="?page=signup" class="auth-btn signup-btn"><i class="fa fa-user"></i> Sign up</a>
+                    Don't have an account? <a href="?page=signup" class="auth-btn signup-btn"><i class="fas fa-user"></i> Sign up</a>
                 </div>
             </div>
         </div>

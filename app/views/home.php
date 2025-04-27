@@ -1,9 +1,83 @@
 <?php
-include_once __DIR__ . '/layout/header.php';
-include_once __DIR__ . '/layout/header_content.php';
+// Bật hiển thị lỗi
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+include_once BASE_PATH . 'app/views/layout/header.php';
+include_once BASE_PATH . 'app/views/layout/header_content.php';
+
+// Kiểm tra $conn
+if (!isset($conn) || is_null($conn)) {
+    error_log("Error: \$conn not initialized in home.php");
+    die("Lỗi: Biến \$conn không được khởi tạo.");
+}
+
+try {
+    // Lấy danh mục gốc
+    $stmt = $conn->query("SELECT * FROM categories WHERE parent_id IS NULL");
+    $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    error_log("Categories count: " . count($categories));
+
+    // Lấy sản phẩm kèm ảnh thumbnail
+    $stmt = $conn->query("
+        SELECT p.*, pi.image_path, c.category_name
+        FROM products p
+        LEFT JOIN product_images pi ON p.product_id = pi.product_id AND pi.thumbnail = b'1'
+        LEFT JOIN categories c ON p.category_id = c.category_id
+        WHERE p.is_active = 1 AND p.is_deleted = 0
+        ORDER BY p.product_id DESC
+        LIMIT 8
+    ");
+    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    error_log("Products count: " . count($products));
+
+    // Log để debug
+    foreach ($products as $product) {
+        error_log("Product ID: {$product['product_id']}, Image Path: " . ($product['image_path'] ?? 'null'));
+    }
+
+    // Latest Products
+    $stmt = $conn->query("
+        SELECT p.*, pi.image_path
+        FROM products p
+        LEFT JOIN product_images pi ON p.product_id = pi.product_id AND pi.thumbnail = b'1'
+        WHERE p.is_active = 1 AND p.is_deleted = 0
+        ORDER BY p.product_updated DESC
+        LIMIT 3
+    ");
+    $latestProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    error_log("Latest Products count: " . count($latestProducts));
+
+    // Top Rated Products
+    $stmt = $conn->query("
+        SELECT p.*, pi.image_path
+        FROM products p
+        LEFT JOIN product_images pi ON p.product_id = pi.product_id AND pi.thumbnail = b'1'
+        WHERE p.is_active = 1 AND p.is_deleted = 0
+        ORDER BY p.sold_quantity DESC
+        LIMIT 3
+    ");
+    $topRatedProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    error_log("Top Rated Products count: " . count($topRatedProducts));
+
+    // Review Products
+    $stmt = $conn->query("
+        SELECT p.*, pi.image_path
+        FROM products p
+        LEFT JOIN product_images pi ON p.product_id = pi.product_id AND pi.thumbnail = b'1'
+        WHERE p.is_active = 1 AND p.is_deleted = 0
+        ORDER BY RAND()
+        LIMIT 3
+    ");
+    $reviewProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    error_log("Review Products count: " . count($reviewProducts));
+} catch (PDOException $e) {
+    error_log("PDO Error: " . $e->getMessage());
+    die("Lỗi PDO: " . $e->getMessage());
+}
 ?>
 
-<!-- Nội dung trang home -->
 <!-- Page Preloder -->
 <div id="preloder">
     <div class="loader"></div>
@@ -17,38 +91,28 @@ include_once __DIR__ . '/layout/header_content.php';
                 <div class="hero__categories">
                     <div class="hero__categories__all">
                         <i class="fa fa-bars"></i>
-                        <span>All departments</span>
+                        <span>All Departments</span>
                     </div>
-                    <ul>
-                        <!-- Category Group: Lifestyle -->
-                        <li><a href="#">Fashion</a></li>
-                        <li><a href="#">Footwear</a></li>
-                        <li><a href="#">Jewelry & Accessories</a></li>
-                        <li><a href="#">Beauty & Personal Care</a></li>
-                        <!-- Category Group: Family & Home -->
-                        <li><a href="#">Home & Kitchen</a></li>
-                        <li><a href="#">Baby & Kids</a></li>
-                        <li><a href="#">Pet Supplies</a></li>
-                        <!-- Category Group: Essentials -->
-                        <li><a href="#">Groceries</a></li>
-                        <li><a href="#">Health & Wellness</a></li>
-                        <li><a href="#">Books & Stationery</a></li>
-                        <!-- Category Group: Tech & Entertainment -->
-                        <li><a href="#">Electronics</a></li>
-                        <li><a href="#">Toys & Games</a></li>
-                        <li><a href="#">Sports & Outdoors</a></li>
+                    <ul class="hero__categories__list">
+                        <?php foreach ($categories as $category): ?>
+                            <li>
+                                <a href="?page=shop_grid&category_id=<?= urlencode($category['category_id']); ?>">
+                                    <?= htmlspecialchars($category['category_name']); ?>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
                     </ul>
                 </div>
             </div>
             <div class="col-lg-9">
                 <div class="hero__search">
                     <div class="hero__search__form">
-                        <form action="#">
+                        <form action="?page=search_results" method="GET">
                             <div class="hero__search__categories">
                                 All Categories
                                 <span class="arrow_carrot-down"></span>
                             </div>
-                            <input type="text" placeholder="What do you need?">
+                            <input type="text" name="keyword" placeholder="What do you need?" value="<?php echo isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : ''; ?>">
                             <button type="submit" class="site-btn">SEARCH</button>
                         </form>
                     </div>
@@ -57,12 +121,12 @@ include_once __DIR__ . '/layout/header_content.php';
                             <i class="fa fa-phone"></i>
                         </div>
                         <div class="hero__search__phone__text">
-                            <h5>028 2008 1888</h5>
+                            <h5>090 636 4541</h5>
                             <span>Support 24/7 time</span>
                         </div>
                     </div>
                 </div>
-                <div class="hero__item set-bg" data-setbg="img/hero/banner.jpg">
+                <div class="hero__item set-bg" data-setbg="<?php echo BASE_URL; ?>img/hero/banner.jpg">
                     <div class="hero__text">
                         <span>FRUIT FRESH</span>
                         <h2>Vegetable <br />100% Organic</h2>
@@ -81,31 +145,21 @@ include_once __DIR__ . '/layout/header_content.php';
     <div class="container">
         <div class="row">
             <div class="categories__slider owl-carousel">
-                <div class="col-lg-3">
-                    <div class="categories__item set-bg" data-setbg="img/categories/Fashion.png">
-                        <h5><a href="#">Fashion</a></h5>
+                <?php foreach ($categories as $category): ?>
+                    <?php
+                    $categoryImage = !empty($category['icon_path']) 
+                        ? BASE_URL . htmlspecialchars($category['icon_path']) 
+                        : BASE_URL . 'img/categories/default.jpg';
+                    error_log("Category ID: {$category['category_id']}, Icon Path: " . ($category['icon_path'] ?? 'null'));
+                    ?>
+                    <div class="col-lg-3">
+                        <div class="categories__item set-bg" data-setbg="<?php echo $categoryImage; ?>">
+                            <h5><a href="?page=shop_grid&category_id=<?= urlencode($category['category_id']); ?>">
+                                <?= htmlspecialchars($category['category_name']); ?>
+                            </a></h5>
+                        </div>
                     </div>
-                </div>
-                <div class="col-lg-3">
-                    <div class="categories__item set-bg" data-setbg="img/categories/Beauty.png">
-                        <h5><a href="#">Beauty & Personal Care</a></h5>
-                    </div>
-                </div>
-                <div class="col-lg-3">
-                    <div class="categories__item set-bg" data-setbg="img/categories/Groceries.png">
-                        <h5><a href="#">Groceries</a></h5>
-                    </div>
-                </div>
-                <div class="col-lg-3">
-                    <div class="categories__item set-bg" data-setbg="img/categories/Book.png">
-                        <h5><a href="#">Books & Stationery</a></h5>
-                    </div>
-                </div>
-                <div class="col-lg-3">
-                    <div class="categories__item set-bg" data-setbg="img/categories/Electronic.png">
-                        <h5><a href="#">Electronics</a></h5>
-                    </div>
-                </div>
+                <?php endforeach; ?>
             </div>
         </div>
     </div>
@@ -118,148 +172,54 @@ include_once __DIR__ . '/layout/header_content.php';
         <div class="row">
             <div class="col-lg-12">
                 <div class="section-title">
-                    <h2>Featured Product</h2>
+                    <h2>Featured Products</h2>
                 </div>
                 <div class="featured__controls">
                     <ul>
                         <li class="active" data-filter="*">All</li>
-                        <li data-filter=".fashion">Fashion</li>
-                        <li data-filter=".beauty">Beauty & Personal Care</li>
-                        <li data-filter=".groceries">Groceries</li>
-                        <li data-filter=".toy">Toys & Games</li>
+                        <?php foreach ($categories as $category): ?>
+                            <li data-filter=".<?php echo strtolower(str_replace(' ', '-', $category['category_name'])); ?>">
+                                <?php echo htmlspecialchars($category['category_name']); ?>
+                            </li>
+                        <?php endforeach; ?>
                     </ul>
                 </div>
             </div>
         </div>
         <div class="row featured__filter">
-            <!-- Fashion -->
-            <div class="col-lg-3 col-md-4 col-sm-6 mix fashion">
-                <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/fashion-1.png">
-                        <ul class="featured__item__pic__hover">
-                            <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                            <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                            <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                        </ul>
-                    </div>
-                    <div class="featured__item__text">
-                        <h6><a href="#">T-shirt</a></h6>
-                        <h5>$15.00</h5>
-                    </div>
-                </div>
-            </div>
-            <!-- Beauty & Personal Care -->
-            <div class="col-lg-3 col-md-4 col-sm-6 mix beauty">
-                <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/beauty-1.png">
-                        <ul class="featured__item__pic__hover">
-                            <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                            <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                            <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                        </ul>
-                    </div>
-                    <div class="featured__item__text">
-                        <h6><a href="#">Eyeshadow Palette</a></h6>
-                        <h5>$25.00</h5>
-                    </div>
-                </div>
-            </div>
-            <!-- Groceries -->
-            <div class="col-lg-3 col-md-4 col-sm-6 mix groceries">
-                <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/groceries-1.png">
-                        <ul class="featured__item__pic__hover">
-                            <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                            <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                            <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                        </ul>
-                    </div>
-                    <div class="featured__item__text">
-                        <h6><a href="#">Organic Rice</a></h6>
-                        <h5>$9.00</h5>
+            <?php foreach ($products as $product): ?>
+                <?php
+                $imagePath = !empty($product['image_path']) 
+                    ? BASE_URL . htmlspecialchars($product['image_path']) 
+                    : BASE_URL . 'img/product/default.jpg';
+                ?>
+                <div class="col-lg-3 col-md-4 col-sm-6 mix <?php echo strtolower(str_replace(' ', '-', $product['category_name'] ?? 'unknown')); ?>">
+                    <div class="featured__item">
+                        <div class="featured__item__pic set-bg" data-setbg="<?php echo $imagePath; ?>">
+                            <ul class="featured__item__pic__hover">
+                                <li><a href="#"><i class="fa fa-heart"></i></a></li>
+                                <li><a href="#"><i class="fa fa-retweet"></i></a></li>
+                                <li><a href="?page=cart&action=add&id=<?php echo $product['product_id']; ?>"><i class="fa fa-shopping-cart"></i></a></li>
+                            </ul>
+                        </div>
+                        <div class="featured__item__text">
+                            <h6><a href="?page=shop_detail&id=<?php echo $product['product_id']; ?>">
+                                <?php echo htmlspecialchars($product['name_product']); ?>
+                            </a></h6>
+                            <h5>
+                                <?php
+                                if ($product['discount_price'] && $product['discount_price'] > 0) {
+                                    echo '$' . number_format($product['discount_price'], 2);
+                                    echo ' <span style="text-decoration: line-through; color: #999;">$' . number_format($product['price'], 2) . '</span>';
+                                } else {
+                                    echo '$' . number_format($product['price'], 2);
+                                }
+                                ?>
+                            </h5>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <!-- Toys & Games -->
-            <div class="col-lg-3 col-md-4 col-sm-6 mix toy">
-                <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/toy-1.png">
-                        <ul class="featured__item__pic__hover">
-                            <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                            <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                            <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                        </ul>
-                    </div>
-                    <div class="featured__item__text">
-                        <h6><a href="#">Lego Set</a></h6>
-                        <h5>$17.00</h5>
-                    </div>
-                </div>
-            </div>
-            <!-- Fashion -->
-            <div class="col-lg-3 col-md-4 col-sm-6 mix fashion">
-                <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/fashion-2.png">
-                        <ul class="featured__item__pic__hover">
-                            <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                            <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                            <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                        </ul>
-                    </div>
-                    <div class="featured__item__text">
-                        <h6><a href="#">Jeans</a></h6>
-                        <h5>$19.00</h5>
-                    </div>
-                </div>
-            </div>
-            <!-- Beauty & Personal Care -->
-            <div class="col-lg-3 col-md-4 col-sm-6 mix beauty">
-                <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/beauty-2.png">
-                        <ul class="featured__item__pic__hover">
-                            <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                            <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                            <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                        </ul>
-                    </div>
-                    <div class="featured__item__text">
-                        <h6><a href="#">Lipstick</a></h6>
-                        <h5>$20.00</h5>
-                    </div>
-                </div>
-            </div>
-            <!-- Groceries -->
-            <div class="col-lg-3 col-md-4 col-sm-6 mix groceries">
-                <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/groceries-2.png">
-                        <ul class="featured__item__pic__hover">
-                            <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                            <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                            <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                        </ul>
-                    </div>
-                    <div class="featured__item__text">
-                        <h6><a href="#">Olive Oil</a></h6>
-                        <h5>$10.00</h5>
-                    </div>
-                </div>
-            </div>
-            <!-- Toys & Games -->
-            <div class="col-lg-3 col-md-4 col-sm-6 mix toy">
-                <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/toy-2.png">
-                        <ul class="featured__item__pic__hover">
-                            <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                            <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                            <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                        </ul>
-                    </div>
-                    <div class="featured__item__text">
-                        <h6><a href="#">Board Game</a></h6>
-                        <h5>$11.00</h5>
-                    </div>
-                </div>
-            </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>
@@ -271,12 +231,12 @@ include_once __DIR__ . '/layout/header_content.php';
         <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-6">
                 <div class="banner__pic">
-                    <img src="img/banner/banner-1.jpg" alt="">
+                    <img src="<?php echo BASE_URL; ?>img/banner/banner-1.jpg" alt="">
                 </div>
             </div>
             <div class="col-lg-6 col-md-6 col-sm-6">
                 <div class="banner__pic">
-                    <img src="img/banner/banner-2.jpg" alt="">
+                    <img src="<?php echo BASE_URL; ?>img/banner/banner-2.jpg" alt="">
                 </div>
             </div>
         </div>
@@ -288,206 +248,282 @@ include_once __DIR__ . '/layout/header_content.php';
 <section class="latest-product spad">
     <div class="container">
         <div class="row">
-            <div class="col-lg-4 col-md-6">
-                <div class="latest-product__text">
-                    <h4>Latest Products</h4>
-                    <div class="latest-product__slider owl-carousel">
-                        <div class="latest-prdouct__slider__item">
-                            <a href="#" class="latest-product__item">
-                                <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/last-1.png" alt="">
-                                </div>
-                                <div class="latest-product__item__text">
-                                    <h6>Noodles</h6>
-                                    <span>$3.00</span>
-                                </div>
-                            </a>
-                            <a href="#" class="latest-product__item">
-                                <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/lp-2.jpg" alt="">
-                                </div>
-                                <div class="latest-product__item__text">
-                                    <h6>Bell pepper</h6>
-                                    <span>$5.00</span>
-                                </div>
-                            </a>
-                            <a href="#" class="latest-product__item">
-                                <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/last-2.png" alt="">
-                                </div>
-                                <div class="latest-product__item__text">
-                                    <h6>Rice Organic</h6>
-                                    <span>$9.00</span>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="latest-prdouct__slider__item">
-                            <a href="#" class="latest-product__item">
-                                <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/last-3.png" alt="">
-                                </div>
-                                <div class="latest-product__item__text">
-                                    <h6>Notebook</h6>
-                                    <span>$3.00</span>
-                                </div>
-                            </a>
-                            <a href="#" class="latest-product__item">
-                                <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/milk.png" alt="">
-                                </div>
-                                <div class="latest-product__item__text">
-                                    <h6>Milk</h6>
-                                    <span>$4.00</span>
-                                </div>
-                            </a>
-                            <a href="#" class="latest-product__item">
-                                <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/cest.png" alt="">
-                                </div>
-                                <div class="latest-product__item__text">
-                                    <h6>Sponge cakey</h6>
-                                    <span>$2.50</span>
-                                </div>
-                            </a>
+            <?php
+            $productGroups = [
+                'Latest Products' => $latestProducts,
+                'Top Rated Products' => $topRatedProducts,
+                'Review Products' => $reviewProducts
+            ];
+            foreach ($productGroups as $title => $group): ?>
+                <div class="col-lg-4 col-md-6">
+                    <div class="latest-product__text">
+                        <h4><?php echo $title; ?></h4>
+                        <div class="latest-product__slider owl-carousel">
+                            <div class="latest-prdouct__slider__item">
+                                <?php foreach ($group as $product): ?>
+                                    <?php
+                                    $imagePath = !empty($product['image_path']) 
+                                        ? BASE_URL . htmlspecialchars($product['image_path']) 
+                                        : BASE_URL . 'img/product/default.jpg';
+                                    ?>
+                                    <a href="?page=shop_detail&id=<?php echo $product['product_id']; ?>" class="latest-product__item">
+                                        <div class="latest-product__item__pic">
+                                            <img src="<?php echo $imagePath; ?>" alt="">
+                                        </div>
+                                        <div class="latest-product__item__text">
+                                            <h6><?php echo htmlspecialchars($product['name_product']); ?></h6>
+                                            <span>
+                                                <?php
+                                                if ($product['discount_price'] && $product['discount_price'] > 0) {
+                                                    echo '$' . number_format($product['discount_price'], 2);
+                                                } else {
+                                                    echo '$' . number_format($product['price'], 2);
+                                                }
+                                                ?>
+                                            </span>
+                                        </div>
+                                    </a>
+                                <?php endforeach; ?>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-lg-4 col-md-6">
-                <div class="latest-product__text">
-                    <h4>Top Rated Products</h4>
-                    <div class="latest-product__slider owl-carousel">
-                        <div class="latest-prdouct__slider__item">
-                            <a href="#" class="latest-product__item">
-                                <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/beauty-1.png" alt="">
-                                </div>
-                                <div class="latest-product__item__text">
-                                    <h6>Eyeshadow Palette</h6>
-                                    <span>$25.00</span>
-                                </div>
-                            </a>
-                            <a href="#" class="latest-product__item">
-                                <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/beauty-2.png" alt="">
-                                </div>
-                                <div class="latest-product__item__text">
-                                    <h6>Lipstick</h6>
-                                    <span>$20.00</span>
-                                </div>
-                            </a>
-                            <a href="#" class="latest-product__item">
-                                <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/makeup remover.png" alt="">
-                                </div>
-                                <div class="latest-product__item__text">
-                                    <h6>Makeup remover</h6>
-                                    <span>$15.00</span>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="latest-prdouct__slider__item">
-                            <a href="#" class="latest-product__item">
-                                <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/mask.png" alt="">
-                                </div>
-                                <div class="latest-product__item__text">
-                                    <h6>Skin care face mask</h6>
-                                    <span>$7.00</span>
-                                </div>
-                            </a>
-                            <a href="#" class="latest-product__item">
-                                <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/watch.png" alt="">
-                                </div>
-                                <div class="latest-product__item__text">
-                                    <h6>Watch</h6>
-                                    <span>$100.00</span>
-                                </div>
-                            </a>
-                            <a href="#" class="latest-product__item">
-                                <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/calcula.png" alt="">
-                                </div>
-                                <div class="latest-product__item__text">
-                                    <h6>Calculator</h6>
-                                    <span>$27.00</span>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6">
-                <div class="latest-product__text">
-                    <h4>Review Products</h4>
-                    <div class="latest-product__slider owl-carousel">
-                        <div class="latest-prdouct__slider__item">
-                            <a href="#" class="latest-product__item">
-                                <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/flip.png" alt="">
-                                </div>
-                                <div class="latest-product__item__text">
-                                    <h6>Flip-flops</h6>
-                                    <span>$5.00</span>
-                                </div>
-                            </a>
-                            <a href="#" class="latest-product__item">
-                                <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/pen.png" alt="">
-                                </div>
-                                <div class="latest-product__item__text">
-                                    <h6>Peny</h6>
-                                    <span>$1.50</span>
-                                </div>
-                            </a>
-                            <a href="#" class="latest-product__item">
-                                <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/clock.png" alt="">
-                                </div>
-                                <div class="latest-product__item__text">
-                                    <h6>Clock</h6>
-                                    <span>$11.00</span>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="latest-prdouct__slider__item">
-                            <a href="#" class="latest-product__item">
-                                <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/lamp.png" alt="">
-                                </div>
-                                <div class="latest-product__item__text">
-                                    <h6>Lamp</h6>
-                                    <span>$14.00</span>
-                                </div>
-                            </a>
-                            <a href="#" class="latest-product__item">
-                                <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/fan.png" alt="">
-                                </div>
-                                <div class="latest-product__item__text">
-                                    <h6>Handheld fan</h6>
-                                    <span>$18.00</span>
-                                </div>
-                            </a>
-                            <a href="#" class="latest-product__item">
-                                <div class="latest-product__item__pic">
-                                    <img src="img/latest-product/wallet.png" alt="">
-                                </div>
-                                <div class="latest-product__item__text">
-                                    <h6>Wallet</h6>
-                                    <span>$22.00</span>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>
 <!-- Latest Product Section End -->
 
-<?php
-include_once __DIR__ . '/layout/footer.php';
-?>
+<!-- CSS tùy chỉnh -->
+<style>
+/* ===== Tiêu đề Featured Products và Latest Products ===== */
+.section-title,
+.latest-product__text {
+    text-align: center;
+}
+
+.section-title h2,
+.latest-product__text h4 {
+    position: relative;
+    display: block;
+    padding-bottom: 1px;
+    margin-bottom: 30px;
+    font-weight: bold;
+    color: #333;
+}
+
+.section-title h2::after,
+.latest-product__text h4::after {
+    content: "";
+    display: block;
+    margin: 10px auto 0;
+    width: 100px;
+    height: 3px;
+    background-color: #ff0000;
+}
+
+/* ===== Sản phẩm Featured ===== */
+.featured__item {
+    background: #fff;
+    border: 1px solid #eee;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 20px 15px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.featured__item:hover {
+    border: 1px solid #ff0000;
+    box-shadow: 0px 12px 24px rgba(0,0,0,0.2);
+    transform: translateY(-8px) scale(1.02);
+    background: #fafafa;
+}
+
+.featured__item__pic {
+    width: 100%;
+    height: 300px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    transition: transform 0.5s ease;
+}
+
+.featured__item:hover .featured__item__pic {
+    transform: scale(1.05);
+}
+
+.featured__item__pic__hover {
+    position: absolute;
+    bottom: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    opacity: 0;
+    transition: all 0.5s ease;
+}
+
+.featured__item:hover .featured__item__pic__hover {
+    bottom: 15px;
+    opacity: 1;
+}
+
+.featured__item__pic__hover li {
+    list-style: none;
+}
+
+.featured__item__pic__hover li i {
+    width: 44px;
+    height: 44px;
+    background: #fff;
+    color: #333;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-size: 18px;
+}
+
+.featured__item__pic__hover li i:hover {
+    background: #ff0000;
+    color: #fff;
+    transform: scale(1.2) rotate(15deg);
+}
+
+.featured__item__text {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.featured__item__text h6 a {
+    font-size: 17px;
+    font-weight: bold;
+    color: #333;
+    text-decoration: none;
+    transition: color 0.4s ease;
+}
+
+.featured__item__text h6 a:hover {
+    color: #ff0000;
+}
+
+.featured__item__text h5 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #000;
+    margin-top: 8px;
+}
+
+/* Layout Featured */
+.featured__filter {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.featured__filter .mix {
+    width: 25%;
+    flex: 0 0 25%;
+    max-width: 25%;
+    padding: 10px;
+}
+
+/* ===== Latest Products, Top Rated, Review Products ===== */
+.latest-product__item {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    min-height: 140px;
+}
+
+.latest-product__item:hover {
+    border: 1px solid #ff0000;
+    box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
+    background: #fafafa;
+}
+
+.latest-product__item__pic {
+    width: 120px;
+    height: 120px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+.latest-product__item__pic img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.latest-product__item__text {
+    flex: 1;
+}
+
+.latest-product__item__text h6 {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+    line-height: 1.4;
+    transition: color 0.4s ease;
+}
+
+.latest-product__item__text h6:hover {
+    color: #ff0000;
+}
+
+.latest-product__item__text span {
+    display: block;
+    margin-top: 6px;
+    font-size: 17px;
+    color: #000;
+    font-weight: bold;
+}
+
+/* Đảm bảo set-bg hoạt động */
+.set-bg {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+</style>
+
+<!-- JavaScript để gán background-image từ data-setbg -->
+<script>
+document.querySelectorAll('.set-bg').forEach(element => {
+    const bgImage = element.getAttribute('data-setbg');
+    if (bgImage) {
+        const img = new Image();
+        img.src = bgImage;
+        img.onload = () => {
+            element.style.backgroundImage = `url(${bgImage})`;
+            console.log(`Loaded image: ${bgImage}`);
+        };
+        img.onerror = () => {
+            console.error(`Failed to load image: ${bgImage}`);
+            element.style.backgroundImage = `url(<?php echo BASE_URL; ?>img/product/default.jpg)`;
+        };
+    } else {
+        console.warn('Missing data-setbg for element:', element);
+        element.style.backgroundImage = `url(<?php echo BASE_URL; ?>img/product/default.jpg)`;
+    }
+});
+</script>
+
+<?php include_once BASE_PATH . 'app/views/layout/footer.php'; ?>

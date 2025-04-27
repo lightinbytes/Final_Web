@@ -53,9 +53,11 @@ switch ($page) {
         $controller->shop_detail();
         break;
     case 'login':
+        $controller = new HomeController($conn);
         $controller->login();
         break;
     case 'signup':
+        $controller = new HomeController($conn);
         $controller->signup();
         break;
     case 'account':

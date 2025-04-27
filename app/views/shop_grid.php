@@ -1,608 +1,433 @@
 <?php
-include_once __DIR__ . '/layout/header.php';
-include_once __DIR__ . '/layout/header_content.php';
+require_once '../database/config.php';
+
+// Gọi header
+include_once __DIR__ . '../layout/header.php';
+include_once __DIR__ . '../layout/header_content.php';
+
+// Lấy danh mục
+$stmt = $conn->query("SELECT * FROM categories");
+$categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Phân trang
+$productsPerPage = 12;
+$page = isset($_GET['page_num']) ? (int)$_GET['page_num'] : 1;
+if ($page < 1) $page = 1;
+$offset = ($page - 1) * $productsPerPage;
+
+// Lấy category_id
+$category_id = isset($_GET['category_id']) ? intval($_GET['category_id']) : 0;
+
+// Lấy sản phẩm
+if ($category_id > 0) {
+    $stmt = $conn->prepare("
+        SELECT p.*, pi.image_path
+        FROM products p
+        LEFT JOIN product_images pi ON p.product_id = pi.product_id AND pi.thumbnail = b'1'
+        WHERE p.category_id = :category_id
+        AND p.is_active = 1
+        AND p.is_deleted = 0
+        LIMIT :limit OFFSET :offset
+    ");
+    $stmt->bindValue(':category_id', $category_id, PDO::PARAM_INT);
+    $stmt->bindValue(':limit', $productsPerPage, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $countStmt = $conn->prepare("
+        SELECT COUNT(*) FROM products
+        WHERE category_id = :category_id AND is_active = 1 AND is_deleted = 0
+    ");
+    $countStmt->execute(['category_id' => $category_id]);
+} else {
+    $stmt = $conn->prepare("
+        SELECT p.*, pi.image_path
+        FROM products p
+        LEFT JOIN product_images pi ON p.product_id = pi.product_id AND pi.thumbnail = b'1'
+        WHERE p.is_active = 1
+        AND p.is_deleted = 0
+        LIMIT :limit OFFSET :offset
+    ");
+    $stmt->bindValue(':limit', $productsPerPage, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $countStmt = $conn->query("
+        SELECT COUNT(*) FROM products
+        WHERE is_active = 1 AND is_deleted = 0
+    ");
+}
+$totalProducts = $countStmt->fetchColumn();
+$totalPages = ceil($totalProducts / $productsPerPage);
 ?>
 
-    <!-- Page Preloder -->
-    <div id="preloder">
-        <div class="loader"></div>
+<!-- Hero Section Begin -->
+<section class="hero hero-normal">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3" id="category-panel">
+                <div class="hero__categories">
+                    <div class="hero__categories__all" id="categoryToggle" style="cursor:pointer;">
+                        <i class="fa fa-bars"></i>
+                        <span>All Departments</span>
+                    </div>
+                    <ul>
+                        <?php foreach ($categories as $category): ?>
+                            <li>
+                                <a href="?page=shop_grid&category_id=<?php echo $category['category_id']; ?>">
+                                    <?php echo htmlspecialchars($category['category_name']); ?>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-9" id="product-panel">
+                <div class="hero__search">
+                    <div class="hero__search__form">
+                        <form action="#">
+                            <div class="hero__search__categories">
+                                All Departments <span class="arrow_carrot-down"></span>
+                            </div>
+                            <input type="text" placeholder="What do you need?">
+                            <button type="submit" class="site-btn">SEARCH</button>
+                        </form>
+                    </div>
+                    <div class="hero__search__phone">
+                        <div class="hero__search__phone__icon"><i class="fa fa-phone"></i></div>
+                        <div class="hero__search__phone__text">
+                            <h5>+84 90 636 4541</h5>
+                            <span>Support 24/7 time</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+</section>
 
-    <!-- Hero Section Begin -->
-    <section class="hero hero-normal">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-3">
-                    <div class="hero__categories">
-                        <div class="hero__categories__all">
-                            <i class="fa fa-bars"></i>
-                            <span>Product Categories</span>
-                        </div>
-                        <ul>
-                            <!-- Category Group: Lifestyle -->
-                            <li><a href="#">Fashion</a></li>
-                            <li><a href="#">Footwear</a></li>
-                            <li><a href="#">Jewelry & Accessories</a></li>
-                            <li><a href="#">Beauty & Personal Care</a></li>
-
-                            <!-- Category Group: Family & Home -->
-                            <li><a href="#">Home & Kitchen</a></li>
-                            <li><a href="#">Baby & Kids</a></li>
-                            <li><a href="#">Pet Supplies</a></li>
-
-                            <!-- Category Group: Essentials -->
-                            <li><a href="#">Groceries</a></li>
-                            <li><a href="#">Health & Wellness</a></li>
-                            <li><a href="#">Books & Stationery</a></li>
-
-                            <!-- Category Group: Tech & Entertainment -->
-                            <li><a href="#">Electronics</a></li>
-                            <li><a href="#">Toys & Games</a></li>
-                            <li><a href="#">Sports & Outdoors</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-lg-9">
-                    <div class="hero__search">
-                        <div class="hero__search__form">
-                            <form action="#">
-                                <div class="hero__search__categories">
-                                    All Categories
-                                    <span class="arrow_carrot-down"></span>
-                                </div>
-                                <input type="text" placeholder="What do you need?">
-                                <button type="submit" class="site-btn">SEARCH</button>
-                            </form>
-                        </div>
-                        <div class="hero__search__phone">
-                            <div class="hero__search__phone__icon">
-                                <i class="fa fa-phone"></i>
-                            </div>
-                            <div class="hero__search__phone__text">
-                                <h5>028 2008 1888</h5>
-                                <span>Support 24/7 time</span>
-                            </div>
-                        </div>
+<!-- Breadcrumb -->
+<section class="breadcrumb-section set-bg" data-setbg="img/breadcrumb.jpg">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <div class="breadcrumb__text">
+                    <h2>Beezy Shop</h2>
+                    <div class="breadcrumb__option">
+                        <a href="?page=index">Home</a>
+                        <span>Shop</span>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
-    <!-- Hero Section End -->
+    </div>
+</section>
 
-    <!-- Breadcrumb Section Begin -->
-    <section class="breadcrumb-section set-bg" data-setbg="img/breadcrumb.jpg">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12 text-center">
-                    <div class="breadcrumb__text">
-                        <h2>Beezy Shop</h2>
-                        <div class="breadcrumb__option">
-                            <a href="?page=index">Home</a>
-                            <span>Shop</span>
-                        </div>
-                    </div>
-                </div>
+<!-- Product Section Begin -->
+<section class="product spad">
+    <div class="container">
+
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <?php
+                if ($category_id > 0) {
+                    $categoryName = '';
+                    foreach ($categories as $category) {
+                        if ($category['category_id'] == $category_id) {
+                            $categoryName = $category['category_name'];
+                            break;
+                        }
+                    }
+                    echo "<h2 class='category-title'>" . htmlspecialchars($categoryName) . "</h2>";
+                } else {
+                    echo "<h2 class='category-title'>All Products</h2>";
+                }
+                ?>
             </div>
         </div>
-    </section>
-    <!-- Breadcrumb Section End -->
 
-    <!-- Product Section Begin -->
-    <section class="product spad">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-3 col-md-5">
-                    <div class="sidebar">
-                        <div class="sidebar__item">
-                            <h4>All departments</h4>
-                            <ul>
-                                <!-- Category Group: Lifestyle -->
-                                <li><a href="#">Fashion</a></li>
-                                <li><a href="#">Footwear</a></li>
-                                <li><a href="#">Jewelry & Accessories</a></li>
-                                <li><a href="#">Beauty & Personal Care</a></li>
-
-                                <!-- Category Group: Family & Home -->
-                                <li><a href="#">Home & Kitchen</a></li>
-                                <li><a href="#">Baby & Kids</a></li>
-                                <li><a href="#">Pet Supplies</a></li>
-
-                                <!-- Category Group: Essentials -->
-                                <li><a href="#">Groceries</a></li>
-                                <li><a href="#">Health & Wellness</a></li>
-                                <li><a href="#">Books & Stationery</a></li>
-
-                                <!-- Category Group: Tech & Entertainment -->
-                                <li><a href="#">Electronics</a></li>
-                                <li><a href="#">Toys & Games</a></li>
-                                <li><a href="#">Sports & Outdoors</a></li>
-                            </ul>
-                        </div>
-                        <div class="sidebar__item">
-                            <h4>Price</h4>
-                            <div class="price-range-wrap">
-                                <div class="price-range ui-slider ui-corner-all ui-slider-horizontal ui-widget ui-widget-content"
-                                    data-min="10" data-max="540">
-                                    <div class="ui-slider-range ui-corner-all ui-widget-header"></div>
-                                    <span tabindex="0" class="ui-slider-handle ui-corner-all ui-state-default"></span>
-                                    <span tabindex="0" class="ui-slider-handle ui-corner-all ui-state-default"></span>
-                                </div>
-                                <div class="range-slider">
-                                    <div class="price-input">
-                                        <input type="text" id="minamount">
-                                        <input type="text" id="maxamount">
-                                    </div>
-                                </div>
+        <div class="row product-grid">
+            <?php foreach ($products as $product): ?>
+                <?php
+                $imagePath = $product['image_path'] ?? 'img/product/default.jpg';
+                $imagePath = str_replace(' ', '%20', $imagePath);
+                ?>
+                <div class="col-lg-3 col-md-4 col-sm-6 product-item">
+                    <div class="product__item">
+                        <a href="?page=shop_detail&id=<?php echo $product['product_id']; ?>">
+                            <div class="product__item__pic set-bg" data-setbg="<?php echo $imagePath; ?>">
+                                <ul class="product__item__pic__hover">
+                                    <li><i class="fa fa-heart"></i></li>
+                                    <li><i class="fa fa-retweet"></i></li>
+                                    <li><i class="fa fa-shopping-cart"></i></li>
+                                </ul>
                             </div>
-                        </div>
-                        <div class="sidebar__item sidebar__item__color--option">
-                            <h4>Colors</h4>
-                            <div class="sidebar__item__color sidebar__item__color--white">
-                                <label for="white">
-                                    White
-                                    <input type="radio" id="white">
-                                </label>
-                            </div>
-                            <div class="sidebar__item__color sidebar__item__color--gray">
-                                <label for="gray">
-                                    Gray
-                                    <input type="radio" id="gray">
-                                </label>
-                            </div>
-                            <div class="sidebar__item__color sidebar__item__color--red">
-                                <label for="red">
-                                    Red
-                                    <input type="radio" id="red">
-                                </label>
-                            </div>
-                            <div class="sidebar__item__color sidebar__item__color--black">
-                                <label for="black">
-                                    Black
-                                    <input type="radio" id="black">
-                                </label>
-                            </div>
-                            <div class="sidebar__item__color sidebar__item__color--blue">
-                                <label for="blue">
-                                    Blue
-                                    <input type="radio" id="blue">
-                                </label>
-                            </div>
-                            <div class="sidebar__item__color sidebar__item__color--green">
-                                <label for="green">
-                                    Green
-                                    <input type="radio" id="green">
-                                </label>
-                            </div>
-                        </div>
-                        <div class="sidebar__item">
-                            <h4>Popular Size</h4>
-                            <div class="sidebar__item__size">
-                                <label for="large">
-                                    Large
-                                    <input type="radio" id="large">
-                                </label>
-                            </div>
-                            <div class="sidebar__item__size">
-                                <label for="medium">
-                                    Medium
-                                    <input type="radio" id="medium">
-                                </label>
-                            </div>
-                            <div class="sidebar__item__size">
-                                <label for="small">
-                                    Small
-                                    <input type="radio" id="small">
-                                </label>
-                            </div>
-                            <div class="sidebar__item__size">
-                                <label for="tiny">
-                                    Tiny
-                                    <input type="radio" id="tiny">
-                                </label>
-                            </div>
-                        </div>
-                        <div class="sidebar__item">
-                            <div class="latest-product__text">
-                                <h4>Latest Products</h4>
-                                <div class="latest-product__slider owl-carousel">
-                                    <div class="latest-prdouct__slider__item">
-                                        <a href="#" class="latest-product__item">
-                                            <div class="latest-product__item__pic">
-                                                <img src="img/latest-product/lp-1.jpg" alt="">
-                                            </div>
-                                            <div class="latest-product__item__text">
-                                                <h6>Crab Pool Security</h6>
-                                                <span>$30.00</span>
-                                            </div>
-                                        </a>
-                                        <a href="#" class="latest-product__item">
-                                            <div class="latest-product__item__pic">
-                                                <img src="img/latest-product/lp-2.jpg" alt="">
-                                            </div>
-                                            <div class="latest-product__item__text">
-                                                <h6>Crab Pool Security</h6>
-                                                <span>$30.00</span>
-                                            </div>
-                                        </a>
-                                        <a href="#" class="latest-product__item">
-                                            <div class="latest-product__item__pic">
-                                                <img src="img/latest-product/lp-3.jpg" alt="">
-                                            </div>
-                                            <div class="latest-product__item__text">
-                                                <h6>Crab Pool Security</h6>
-                                                <span>$30.00</span>
-                                            </div>
-                                        </a>
-                                    </div>
-                                    <div class="latest-prdouct__slider__item">
-                                        <a href="#" class="latest-product__item">
-                                            <div class="latest-product__item__pic">
-                                                <img src="img/latest-product/lp-1.jpg" alt="">
-                                            </div>
-                                            <div class="latest-product__item__text">
-                                                <h6>Crab Pool Security</h6>
-                                                <span>$30.00</span>
-                                            </div>
-                                        </a>
-                                        <a href="#" class="latest-product__item">
-                                            <div class="latest-product__item__pic">
-                                                <img src="img/latest-product/lp-2.jpg" alt="">
-                                            </div>
-                                            <div class="latest-product__item__text">
-                                                <h6>Crab Pool Security</h6>
-                                                <span>$30.00</span>
-                                            </div>
-                                        </a>
-                                        <a href="#" class="latest-product__item">
-                                            <div class="latest-product__item__pic">
-                                                <img src="img/latest-product/lp-3.jpg" alt="">
-                                            </div>
-                                            <div class="latest-product__item__text">
-                                                <h6>Crab Pool Security</h6>
-                                                <span>$30.00</span>
-                                            </div>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
+                        </a>
+                        <div class="product__item__text">
+                            <h6><a href="?page=shop_detail&id=<?php echo $product['product_id']; ?>">
+                                <?php echo htmlspecialchars($product['name_product'] ?? 'Unknown'); ?>
+                            </a></h6>
+                            <h5>$<?php echo number_format($product['price'] ?? 0.00, 2); ?></h5>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-9 col-md-7">
-                    <div class="product__discount">
-                        <div class="section-title product__discount__title">
-                            <h2>Sale Off</h2>
-                        </div>
-                        <div class="row">
-                            <div class="product__discount__slider owl-carousel">
-                                <div class="col-lg-4">
-                                    <div class="product__discount__item">
-                                        <div class="product__discount__item__pic set-bg"
-                                            data-setbg="img/product/discount/pd-1.jpg">
-                                            <div class="product__discount__percent">-20%</div>
-                                            <ul class="product__item__pic__hover">
-                                                <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                                <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                                <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                                            </ul>
-                                        </div>
-                                        <div class="product__discount__item__text">
-                                            <span>Dried Fruit</span>
-                                            <h5><a href="#">Raisin’n’nuts</a></h5>
-                                            <div class="product__item__price">$30.00 <span>$36.00</span></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-4">
-                                    <div class="product__discount__item">
-                                        <div class="product__discount__item__pic set-bg"
-                                            data-setbg="img/product/discount/pd-2.jpg">
-                                            <div class="product__discount__percent">-20%</div>
-                                            <ul class="product__item__pic__hover">
-                                                <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                                <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                                <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                                            </ul>
-                                        </div>
-                                        <div class="product__discount__item__text">
-                                            <span>Vegetables</span>
-                                            <h5><a href="#">Vegetables’package</a></h5>
-                                            <div class="product__item__price">$30.00 <span>$36.00</span></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-4">
-                                    <div class="product__discount__item">
-                                        <div class="product__discount__item__pic set-bg"
-                                            data-setbg="img/product/discount/pd-3.jpg">
-                                            <div class="product__discount__percent">-20%</div>
-                                            <ul class="product__item__pic__hover">
-                                                <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                                <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                                <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                                            </ul>
-                                        </div>
-                                        <div class="product__discount__item__text">
-                                            <span>Dried Fruit</span>
-                                            <h5><a href="#">Mixed Fruitss</a></h5>
-                                            <div class="product__item__price">$30.00 <span>$36.00</span></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-4">
-                                    <div class="product__discount__item">
-                                        <div class="product__discount__item__pic set-bg"
-                                            data-setbg="img/product/discount/pd-4.jpg">
-                                            <div class="product__discount__percent">-20%</div>
-                                            <ul class="product__item__pic__hover">
-                                                <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                                <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                                <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                                            </ul>
-                                        </div>
-                                        <div class="product__discount__item__text">
-                                            <span>Dried Fruit</span>
-                                            <h5><a href="#">Raisin’n’nuts</a></h5>
-                                            <div class="product__item__price">$30.00 <span>$36.00</span></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-4">
-                                    <div class="product__discount__item">
-                                        <div class="product__discount__item__pic set-bg"
-                                            data-setbg="img/product/discount/pd-5.jpg">
-                                            <div class="product__discount__percent">-20%</div>
-                                            <ul class="product__item__pic__hover">
-                                                <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                                <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                                <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                                            </ul>
-                                        </div>
-                                        <div class="product__discount__item__text">
-                                            <span>Dried Fruit</span>
-                                            <h5><a href="#">Raisin’n’nuts</a></h5>
-                                            <div class="product__item__price">$30.00 <span>$36.00</span></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-4">
-                                    <div class="product__discount__item">
-                                        <div class="product__discount__item__pic set-bg"
-                                            data-setbg="img/product/discount/pd-6.jpg">
-                                            <div class="product__discount__percent">-20%</div>
-                                            <ul class="product__item__pic__hover">
-                                                <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                                <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                                <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                                            </ul>
-                                        </div>
-                                        <div class="product__discount__item__text">
-                                            <span>Dried Fruit</span>
-                                            <h5><a href="#">Raisin’n’nuts</a></h5>
-                                            <div class="product__item__price">$30.00 <span>$36.00</span></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="filter__item">
-                        <div class="row">
-                            <div class="col-lg-4 col-md-5">
-                                <div class="filter__sort">
-                                    <span>Sort By</span>
-                                    <select>
-                                        <option value="0">Default</option>
-                                        <option value="0">Default</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-4 col-md-4">
-                                <div class="filter__found">
-                                    <h6><span>16</span> Products found</h6>
-                                </div>
-                            </div>
-                            <div class="col-lg-4 col-md-3">
-                                <div class="filter__option">
-                                    <span class="icon_grid-2x2"></span>
-                                    <span class="icon_ul"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-lg-4 col-md-6 col-sm-6">
-                            <div class="product__item">
-                                <div class="product__item__pic set-bg" data-setbg="img/product/product-1.jpg">
-                                    <ul class="product__item__pic__hover">
-                                        <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                                    </ul>
-                                </div>
-                                <div class="product__item__text">
-                                    <h6><a href="#">Crab Pool Security</a></h6>
-                                    <h5>$30.00</h5>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-6 col-sm-6">
-                            <div class="product__item">
-                                <div class="product__item__pic set-bg" data-setbg="img/product/product-2.jpg">
-                                    <ul class="product__item__pic__hover">
-                                        <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                                    </ul>
-                                </div>
-                                <div class="product__item__text">
-                                    <h6><a href="#">Crab Pool Security</a></h6>
-                                    <h5>$30.00</h5>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-6 col-sm-6">
-                            <div class="product__item">
-                                <div class="product__item__pic set-bg" data-setbg="img/product/product-3.jpg">
-                                    <ul class="product__item__pic__hover">
-                                        <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                                    </ul>
-                                </div>
-                                <div class="product__item__text">
-                                    <h6><a href="#">Crab Pool Security</a></h6>
-                                    <h5>$30.00</h5>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-6 col-sm-6">
-                            <div class="product__item">
-                                <div class="product__item__pic set-bg" data-setbg="img/product/product-4.jpg">
-                                    <ul class="product__item__pic__hover">
-                                        <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                                    </ul>
-                                </div>
-                                <div class="product__item__text">
-                                    <h6><a href="#">Crab Pool Security</a></h6>
-                                    <h5>$30.00</h5>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-6 col-sm-6">
-                            <div class="product__item">
-                                <div class="product__item__pic set-bg" data-setbg="img/product/product-5.jpg">
-                                    <ul class="product__item__pic__hover">
-                                        <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                                    </ul>
-                                </div>
-                                <div class="product__item__text">
-                                    <h6><a href="#">Crab Pool Security</a></h6>
-                                    <h5>$30.00</h5>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-6 col-sm-6">
-                            <div class="product__item">
-                                <div class="product__item__pic set-bg" data-setbg="img/product/product-6.jpg">
-                                    <ul class="product__item__pic__hover">
-                                        <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                                    </ul>
-                                </div>
-                                <div class="product__item__text">
-                                    <h6><a href="#">Crab Pool Security</a></h6>
-                                    <h5>$30.00</h5>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-6 col-sm-6">
-                            <div class="product__item">
-                                <div class="product__item__pic set-bg" data-setbg="img/product/product-7.jpg">
-                                    <ul class="product__item__pic__hover">
-                                        <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                                    </ul>
-                                </div>
-                                <div class="product__item__text">
-                                    <h6><a href="#">Crab Pool Security</a></h6>
-                                    <h5>$30.00</h5>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-6 col-sm-6">
-                            <div class="product__item">
-                                <div class="product__item__pic set-bg" data-setbg="img/product/product-8.jpg">
-                                    <ul class="product__item__pic__hover">
-                                        <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                                    </ul>
-                                </div>
-                                <div class="product__item__text">
-                                    <h6><a href="#">Crab Pool Security</a></h6>
-                                    <h5>$30.00</h5>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-6 col-sm-6">
-                            <div class="product__item">
-                                <div class="product__item__pic set-bg" data-setbg="img/product/product-9.jpg">
-                                    <ul class="product__item__pic__hover">
-                                        <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                                    </ul>
-                                </div>
-                                <div class="product__item__text">
-                                    <h6><a href="#">Crab Pool Security</a></h6>
-                                    <h5>$30.00</h5>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-6 col-sm-6">
-                            <div class="product__item">
-                                <div class="product__item__pic set-bg" data-setbg="img/product/product-10.jpg">
-                                    <ul class="product__item__pic__hover">
-                                        <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                                    </ul>
-                                </div>
-                                <div class="product__item__text">
-                                    <h6><a href="#">Crab Pool Security</a></h6>
-                                    <h5>$30.00</h5>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-6 col-sm-6">
-                            <div class="product__item">
-                                <div class="product__item__pic set-bg" data-setbg="img/product/product-11.jpg">
-                                    <ul class="product__item__pic__hover">
-                                        <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                                    </ul>
-                                </div>
-                                <div class="product__item__text">
-                                    <h6><a href="#">Crab Pool Security</a></h6>
-                                    <h5>$30.00</h5>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-6 col-sm-6">
-                            <div class="product__item">
-                                <div class="product__item__pic set-bg" data-setbg="img/product/product-12.jpg">
-                                    <ul class="product__item__pic__hover">
-                                        <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                                    </ul>
-                                </div>
-                                <div class="product__item__text">
-                                    <h6><a href="#">Crab Pool Security</a></h6>
-                                    <h5>$30.00</h5>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product__pagination">
-                        <a href="#">1</a>
-                        <a href="#">2</a>
-                        <a href="#">3</a>
-                        <a href="#"><i class="fa fa-long-arrow-right"></i></a>
-                    </div>
-                </div>
-            </div>
+            <?php endforeach; ?>
         </div>
-    </section>
-    <!-- Product Section End -->
 
-<?php include_once __DIR__ . '/layout/footer.php'; ?>
+        <!-- Pagination -->
+        <div class="product__pagination">
+            <?php
+            $baseLink = "?page=shop_grid";
+            if ($category_id > 0) {
+                $baseLink .= "&category_id=$category_id";
+            }
+            if ($page > 1) {
+                echo '<a href="' . $baseLink . '&page_num=' . ($page - 1) . '"><i class="fa fa-long-arrow-left"></i></a>';
+            }
+            $start = max(1, $page - 2);
+            $end = min($totalPages, $page + 2);
+            for ($i = $start; $i <= $end; $i++) {
+                echo '<a href="' . $baseLink . '&page_num=' . $i . '"';
+                if ($i == $page) echo ' class="active"';
+                echo '>' . $i . '</a>';
+            }
+            if ($page < $totalPages) {
+                echo '<a href="' . $baseLink . '&page_num=' . ($page + 1) . '"><i class="fa fa-long-arrow-right"></i></a>';
+            }
+            ?>
+        </div>
+
+    </div>
+</section>
+
+<!-- Scripts -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.set-bg').forEach(function (el) {
+        var bg = el.getAttribute('data-setbg');
+        if (bg) {
+            el.style.backgroundImage = 'url(' + bg + ')';
+            el.style.backgroundSize = 'cover';
+            el.style.backgroundPosition = 'center';
+        }
+    });
+});
+
+// 🛠 Hover mở dropdown "All Departments"
+document.addEventListener('DOMContentLoaded', function () {
+    const categoryToggle = document.getElementById('categoryToggle');
+    const categoryPanel = document.getElementById('category-panel');
+    if (categoryToggle && categoryPanel) {
+        const categoryList = categoryPanel.querySelector('ul');
+        categoryToggle.addEventListener('mouseenter', () => {
+            categoryList.style.display = 'block';
+            categoryToggle.style.background = '#ff0000';
+            categoryToggle.style.color = '#fff';
+        });
+        categoryPanel.addEventListener('mouseleave', () => {
+            categoryList.style.display = 'none';
+            categoryToggle.style.background = '';
+            categoryToggle.style.color = '';
+        });
+        categoryList.style.display = 'none';
+    }
+});
+</script>
+
+<!-- Custom CSS -->
+<style>
+/* Tiêu đề All Products hoặc Products in Category */
+.category-title {
+    font-size: 60px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 70px;
+    line-height: 1.2;
+}
+.category-title::after {
+    content: "";
+    display: block;
+    width: 250px;
+    height: 3px;
+    background: #ff0000;
+    margin: 10px auto 0;
+}
+
+/* Sản phẩm */
+.product__item {
+    background: #fff;
+    border: 1px solid #eee;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 20px 15px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.product__item:hover {
+    border: 1px solid #ff0000;
+    box-shadow: 0px 12px 24px rgba(0,0,0,0.2);
+    transform: translateY(-8px) scale(1.02);
+    background: #fafafa;
+}
+
+.product__item__pic {
+    width: 100%;
+    height: 300px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    transition: transform 0.5s ease;
+}
+
+.product__item:hover .product__item__pic {
+    transform: scale(1.05);
+}
+
+.product__item__pic__hover {
+    position: absolute;
+    bottom: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    opacity: 0;
+    transition: all 0.5s ease;
+    width: auto;
+}
+
+.product__item:hover .product__item__pic__hover {
+    bottom: 15px;
+    opacity: 1;
+}
+
+.product__item__pic__hover li {
+    list-style: none;
+}
+
+.product__item__pic__hover li i {
+    width: 44px;
+    height: 44px;
+    background: #fff;
+    color: #333;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-size: 18px;
+}
+
+.product__item__pic__hover li i:hover {
+    background: #ff0000;
+    color: #fff;
+    transform: scale(1.2) rotate(15deg);
+}
+
+.product__item__text {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.product__item__text h6 a {
+    font-size: 17px;
+    font-weight: bold;
+    color: #333;
+    text-decoration: none;
+    transition: color 0.4s ease;
+}
+
+.product__item__text h6 a:hover {
+    color: #ff0000;
+}
+
+.product__item__text h5 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #000;
+    margin-top: 8px;
+}
+
+.product-grid {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.product-item {
+    width: 25%;
+    flex: 0 0 25%;
+    max-width: 25%;
+}
+
+#product-panel.compact .product-item {
+    width: 33.33%;
+    flex: 0 0 33.33%;
+    max-width: 33.33%;
+}
+
+/* Hero Section Search Phone */
+.hero__search__phone {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.hero__search__phone__icon {
+    width: 50px;
+    height: 50px;
+    background: #f5f5f5;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero__search__phone__icon i {
+    color: #f7941d;
+    font-size: 20px;
+}
+
+/* 🛠 Pagination căn giữa cực đẹp */
+.product__pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 50px;
+    gap: 8px;
+}
+
+.product__pagination a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid #ccc;
+    color: #333;
+    font-weight: bold;
+    border-radius: 6px;
+    transition: all 0.3s;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.product__pagination a.active {
+    background: #ff0000;
+    color: #fff;
+    border-color: #ff0000;
+}
+
+.product__pagination a:hover {
+    background: #ff0000;
+    color: #fff;
+    border-color: #ff0000;
+}
+</style>
+
+<?php include_once __DIR__ . '../layout/footer.php'; ?>

@@ -7,10 +7,15 @@ class HomeController {
     private $conn;
 
     public function __construct($conn) {
+        if (!isset($conn) || is_null($conn)) {
+            die("Lỗi: Biến \$conn không được khởi tạo trong HomeController.");
+        }
         $this->conn = $conn;
     }
 
     public function index() {
+        // Truyền $conn vào home.php
+        $conn = $this->conn;
         require_once BASE_PATH . 'app/views/home.php';
     }
 
