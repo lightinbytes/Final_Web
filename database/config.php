@@ -1,6 +1,6 @@
 <?php
 // Định nghĩa các hằng số
-define('BASE_URL', 'http://localhost/Web_FinalProject_Group7-main/public/'); // Thay bằng tên thư mục thực tế
+define('BASE_URL', 'http://localhost/Web_FinalProject_Group7-main/public/');
 define('ENVIRONMENT', 'development');
 define('HOST', 'localhost');
 define('DATABASE', 'online_shopping');

@@ -14,13 +14,12 @@ class HomeController {
     }
 
     public function index() {
-        // Truyền $conn vào home.php
         $conn = $this->conn;
         require_once BASE_PATH . 'app/views/home.php';
     }
 
     public function login() {
-        $conn = $this->conn; // Truyền $conn vào login.php
+        $conn = $this->conn;
         require_once BASE_PATH . 'app/views/login.php';
     }
 
@@ -55,22 +54,27 @@ class HomeController {
     }
 
     public function cart() {
+        $conn = $this->conn;
         require_once BASE_PATH . 'app/views/cart.php';
     }
 
     public function checkout() {
+        $conn = $this->conn;
         require_once BASE_PATH . 'app/views/checkout.php';
     }
 
     public function shop_grid() {
+        $conn = $this->conn;
         require_once BASE_PATH . 'app/views/shop_grid.php';
     }
 
     public function shop_detail() {
+        $conn = $this->conn;
         require_once BASE_PATH . 'app/views/shop_detail.php';
     }
 
     public function account() {
+        $conn = $this->conn;
         require_once BASE_PATH . 'app/views/account.php';
     }
 }

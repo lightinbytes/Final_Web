@@ -1,66 +1,88 @@
 <?php
-require_once '../database/config.php';
+// Bật hiển thị lỗi
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+require_once BASE_PATH . 'database/config.php';
+
+// Kiểm tra $conn
+if (!isset($conn) || is_null($conn)) {
+    error_log("Error: \$conn not initialized in shop_grid.php");
+    die("Lỗi: Biến \$conn không được khởi tạo.");
+}
 
 // Gọi header
-include_once __DIR__ . '../layout/header.php';
-include_once __DIR__ . '../layout/header_content.php';
+include_once BASE_PATH . 'app/views/layout/header.php';
+include_once BASE_PATH . 'app/views/layout/header_content.php';
 
-// Lấy danh mục
-$stmt = $conn->query("SELECT * FROM categories");
-$categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+try {
+    // Lấy danh mục
+    $stmt = $conn->query("SELECT * FROM categories");
+    $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    error_log("Categories count in shop_grid: " . count($categories));
 
-// Phân trang
-$productsPerPage = 12;
-$page = isset($_GET['page_num']) ? (int)$_GET['page_num'] : 1;
-if ($page < 1) $page = 1;
-$offset = ($page - 1) * $productsPerPage;
+    // Phân trang
+    $productsPerPage = 12;
+    $page = isset($_GET['page_num']) ? (int)$_GET['page_num'] : 1;
+    if ($page < 1) $page = 1;
+    $offset = ($page - 1) * $productsPerPage;
 
-// Lấy category_id
-$category_id = isset($_GET['category_id']) ? intval($_GET['category_id']) : 0;
+    // Lấy category_id
+    $category_id = isset($_GET['category_id']) ? intval($_GET['category_id']) : 0;
 
-// Lấy sản phẩm
-if ($category_id > 0) {
-    $stmt = $conn->prepare("
-        SELECT p.*, pi.image_path
-        FROM products p
-        LEFT JOIN product_images pi ON p.product_id = pi.product_id AND pi.thumbnail = b'1'
-        WHERE p.category_id = :category_id
-        AND p.is_active = 1
-        AND p.is_deleted = 0
-        LIMIT :limit OFFSET :offset
-    ");
-    $stmt->bindValue(':category_id', $category_id, PDO::PARAM_INT);
-    $stmt->bindValue(':limit', $productsPerPage, PDO::PARAM_INT);
-    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-    $stmt->execute();
-    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Lấy sản phẩm
+    if ($category_id > 0) {
+        $stmt = $conn->prepare("
+            SELECT p.*, pi.image_path
+            FROM products p
+            LEFT JOIN product_images pi ON p.product_id = pi.product_id AND pi.thumbnail = b'1'
+            WHERE p.category_id = :category_id
+            AND p.is_active = 1
+            AND p.is_deleted = 0
+            LIMIT :limit OFFSET :offset
+        ");
+        $stmt->bindValue(':category_id', $category_id, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $productsPerPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $countStmt = $conn->prepare("
-        SELECT COUNT(*) FROM products
-        WHERE category_id = :category_id AND is_active = 1 AND is_deleted = 0
-    ");
-    $countStmt->execute(['category_id' => $category_id]);
-} else {
-    $stmt = $conn->prepare("
-        SELECT p.*, pi.image_path
-        FROM products p
-        LEFT JOIN product_images pi ON p.product_id = pi.product_id AND pi.thumbnail = b'1'
-        WHERE p.is_active = 1
-        AND p.is_deleted = 0
-        LIMIT :limit OFFSET :offset
-    ");
-    $stmt->bindValue(':limit', $productsPerPage, PDO::PARAM_INT);
-    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-    $stmt->execute();
-    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $countStmt = $conn->prepare("
+            SELECT COUNT(*) FROM products
+            WHERE category_id = :category_id AND is_active = 1 AND is_deleted = 0
+        ");
+        $countStmt->execute(['category_id' => $category_id]);
+    } else {
+        $stmt = $conn->prepare("
+            SELECT p.*, pi.image_path
+            FROM products p
+            LEFT JOIN product_images pi ON p.product_id = pi.product_id AND pi.thumbnail = b'1'
+            WHERE p.is_active = 1
+            AND p.is_deleted = 0
+            LIMIT :limit OFFSET :offset
+        ");
+        $stmt->bindValue(':limit', $productsPerPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $countStmt = $conn->query("
-        SELECT COUNT(*) FROM products
-        WHERE is_active = 1 AND is_deleted = 0
-    ");
+        $countStmt = $conn->query("
+            SELECT COUNT(*) FROM products
+            WHERE is_active = 1 AND is_deleted = 0
+        ");
+    }
+    $totalProducts = $countStmt->fetchColumn();
+    $totalPages = ceil($totalProducts / $productsPerPage);
+
+    // Log sản phẩm
+    foreach ($products as $product) {
+        error_log("Product ID: {$product['product_id']}, Image Path: " . ($product['image_path'] ?? 'null'));
+    }
+} catch (PDOException $e) {
+    error_log("PDO Error in shop_grid: " . $e->getMessage());
+    die("Lỗi PDO: " . $e->getMessage());
 }
-$totalProducts = $countStmt->fetchColumn();
-$totalPages = ceil($totalProducts / $productsPerPage);
 ?>
 
 <!-- Hero Section Begin -->
@@ -87,11 +109,11 @@ $totalPages = ceil($totalProducts / $productsPerPage);
             <div class="col-lg-9" id="product-panel">
                 <div class="hero__search">
                     <div class="hero__search__form">
-                        <form action="#">
+                        <form action="?page=search_results" method="GET">
                             <div class="hero__search__categories">
                                 All Departments <span class="arrow_carrot-down"></span>
                             </div>
-                            <input type="text" placeholder="What do you need?">
+                            <input type="text" name="keyword" placeholder="What do you need?">
                             <button type="submit" class="site-btn">SEARCH</button>
                         </form>
                     </div>
@@ -109,7 +131,7 @@ $totalPages = ceil($totalProducts / $productsPerPage);
 </section>
 
 <!-- Breadcrumb -->
-<section class="breadcrumb-section set-bg" data-setbg="img/breadcrumb.jpg">
+<section class="breadcrumb-section set-bg" data-setbg="<?php echo BASE_URL; ?>img/breadcrumb.jpg">
     <div class="container">
         <div class="row">
             <div class="col-lg-12 text-center">
@@ -128,7 +150,6 @@ $totalPages = ceil($totalProducts / $productsPerPage);
 <!-- Product Section Begin -->
 <section class="product spad">
     <div class="container">
-
         <div class="row">
             <div class="col-lg-12 text-center">
                 <?php
@@ -151,7 +172,9 @@ $totalPages = ceil($totalProducts / $productsPerPage);
         <div class="row product-grid">
             <?php foreach ($products as $product): ?>
                 <?php
-                $imagePath = $product['image_path'] ?? 'img/product/default.jpg';
+                $imagePath = !empty($product['image_path']) 
+                    ? BASE_URL . htmlspecialchars($product['image_path']) 
+                    : BASE_URL . 'img/product/default.jpg';
                 $imagePath = str_replace(' ', '%20', $imagePath);
                 ?>
                 <div class="col-lg-3 col-md-4 col-sm-6 product-item">
@@ -198,7 +221,6 @@ $totalPages = ceil($totalProducts / $productsPerPage);
             }
             ?>
         </div>
-
     </div>
 </section>
 
@@ -208,14 +230,23 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.set-bg').forEach(function (el) {
         var bg = el.getAttribute('data-setbg');
         if (bg) {
-            el.style.backgroundImage = 'url(' + bg + ')';
-            el.style.backgroundSize = 'cover';
-            el.style.backgroundPosition = 'center';
+            var img = new Image();
+            img.src = bg;
+            img.onload = function() {
+                el.style.backgroundImage = 'url(' + bg + ')';
+                el.style.backgroundSize = 'cover';
+                el.style.backgroundPosition = 'center';
+                console.log('Loaded image: ' + bg);
+            };
+            img.onerror = function() {
+                console.error('Failed to load image: ' + bg);
+                el.style.backgroundImage = 'url(<?php echo BASE_URL; ?>img/product/default.jpg)';
+            };
         }
     });
 });
 
-// 🛠 Hover mở dropdown "All Departments"
+// Hover mở dropdown "All Departments"
 document.addEventListener('DOMContentLoaded', function () {
     const categoryToggle = document.getElementById('categoryToggle');
     const categoryPanel = document.getElementById('category-panel');
@@ -393,7 +424,7 @@ document.addEventListener('DOMContentLoaded', function () {
     font-size: 20px;
 }
 
-/* 🛠 Pagination căn giữa cực đẹp */
+/* Pagination căn giữa */
 .product__pagination {
     display: flex;
     justify-content: center;
@@ -430,4 +461,4 @@ document.addEventListener('DOMContentLoaded', function () {
 }
 </style>
 
-<?php include_once __DIR__ . '../layout/footer.php'; ?>
+<?php include_once BASE_PATH . 'app/views/layout/footer.php'; ?>
